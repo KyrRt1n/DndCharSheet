@@ -245,12 +245,12 @@
     </div>
 
     <div class="controls">
-        <button class="btn btn-save" onclick="saveCharacter()">💾 Save</button>
+        <button class="btn btn-save" onclick="saveCharacter()">💾 Save to browser</button>
         <button class="btn btn-cloud" onclick="toggleCloudModal()">☁️ Sync</button>
-        <button class="btn btn-io" onclick="exportToFile()">⬇️ Файл</button>
-        <button class="btn btn-io" onclick="document.getElementById('importFile').click()">⬆️ Файл</button>
+        <button class="btn btn-io" onclick="exportToFile()">⬇️ Export</button>
+        <button class="btn btn-io" onclick="document.getElementById('importFile').click()">⬆️ Import/button>
         <input type="file" id="importFile" style="display:none" onchange="importFromFile(this)">
-        <button class="btn btn-clear" onclick="clearCharacter()">🗑️</button>
+        <button class="btn btn-clear" onclick="clearCharacter()">🗑️ Clear</button>
     </div>
 </div>
 
@@ -261,8 +261,8 @@
         <input type="password" id="ghToken" placeholder="GitHub Token (ghp_...)" onchange="saveCloudConfig()">
         <input type="text" id="gistId" placeholder="Gist ID (длинный код из URL)" onchange="saveCloudConfig()">
         <div class="modal-btns">
-            <button class="btn btn-io" onclick="loadFromCloud()">☁️ Скачать</button>
-            <button class="btn btn-save" onclick="uploadToCloud()">☁️ Загрузить</button>
+            <button class="btn btn-io" onclick="loadFromCloud()">☁️ LoadFromCloud</button>
+            <button class="btn btn-save" onclick="uploadToCloud()">☁️ UploadToCloud</button>
         </div>
         <button class="btn btn-clear" style="margin-top:10px" onclick="toggleCloudModal()">Закрыть</button>
     </div>
