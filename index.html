@@ -4,274 +4,363 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐉</text></svg>">
-    <title>D&D Hero Sheet v17 (Cloud Sync)</title>
+    <title>D&D Live Sheet</title>
     <style>
-        /* === 1. БАЗОВЫЕ СТИЛИ (ПК) === */
-        :root { --gold: #d4af37; --bg: #1a1a1a; --card: #2d2d2d; --text: #e0e0e0; --red: #c0392b; --green: #27ae60; --blue: #2980b9; --purple: #9b59b6; --dark-input: #111; --tab-inactive: #333; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; line-height: 1.6; }
-        .container { max-width: 1000px; margin: 0 auto; background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; min-height: 90vh;}
-        h1, h2, h3 { color: var(--gold); border-bottom: 1px solid var(--gold); padding-bottom: 5px; margin-top: 0; }
-        h3 { font-size: 1.1rem; border-bottom: 1px dashed #555; margin-top: 20px; margin-bottom: 15px; }
+        /* === СТИЛИ (Оставил прежние, добавил индикатор онлайна) === */
+        :root { --gold: #d4af37; --bg: #1a1a1a; --card: #2d2d2d; --text: #e0e0e0; --red: #c0392b; --green: #27ae60; --blue: #2980b9; --dark-input: #111; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; line-height: 1.6; margin: 0; }
+        .container { max-width: 1000px; margin: 0 auto; background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid #444; min-height: 90vh; display: flex; flex-direction: column; }
+        
+        /* CONNECTION BAR */
+        .connection-bar { background: #111; border-bottom: 2px solid var(--gold); padding: 10px; margin: -15px -15px 15px -15px; border-radius: 12px 12px 0 0; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+        .conn-inputs { display: flex; gap: 5px; flex-grow: 1; }
+        .conn-inputs input { background: #333; border: 1px solid #555; color: white; padding: 8px; border-radius: 4px; font-weight: bold; width: 100%; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #555; display: inline-block; margin-right: 5px; }
+        .status-dot.online { background: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+        .status-text { font-size: 0.8rem; color: #888; }
 
-        /* Табы */
-        .tabs-nav { display: flex; gap: 5px; border-bottom: 2px solid #444; margin-bottom: 20px; flex-wrap: wrap; }
-        .tab-btn {
-            background: var(--tab-inactive); color: #888; border: none; padding: 10px 20px; 
-            cursor: pointer; border-radius: 8px 8px 0 0; font-weight: bold; font-size: 1rem; flex-grow: 1; transition: all 0.2s;
-        }
-        .tab-btn:hover { background: #3d3d3d; color: var(--gold); }
-        .tab-btn.active { background: var(--card); color: var(--gold); border: 2px solid #444; border-bottom: 2px solid var(--card); margin-bottom: -2px; }
-        .tab-pane { display: none; animation: fadeIn 0.3s ease; }
+        /* TABS */
+        .tabs-nav { display: flex; gap: 5px; border-bottom: 2px solid #444; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { background: #333; color: #888; border: none; padding: 10px 15px; cursor: pointer; border-radius: 8px 8px 0 0; font-weight: bold; flex-shrink: 0; }
+        .tab-btn.active { background: var(--card); color: var(--gold); border: 2px solid #444; border-bottom: 2px solid var(--card); }
+        .tab-pane { display: none; padding-bottom: 20px; }
         .tab-pane.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Header */
-        .header-grid { display: grid; grid-template-columns: 140px 1fr; gap: 20px; margin-bottom: 20px; }
-        .avatar-box { width: 140px; height: 140px; border: 2px dashed var(--gold); display: flex; align-items: center; justify-content: center; background-size: cover; background-position: center; cursor: pointer; border-radius: 8px; overflow: hidden; background-color: #222; }
-        .header-main { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
-        .header-inputs { flex-grow: 1; }
-        .level-badge { background: #222; border: 2px solid var(--gold); border-radius: 8px; padding: 5px; text-align: center; min-width: 100px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .lvl-title { font-size: 0.7rem; color: #888; text-transform: uppercase; display: block; }
-        .lvl-val { font-size: 2.5rem; line-height: 1; color: var(--gold); font-weight: bold; display: block; margin: 2px 0; }
-        .xp-display { font-size: 0.8rem; color: #ccc; margin-bottom: 5px; border-bottom: 1px solid #444; padding-bottom: 2px; }
-        .xp-control { display: flex; gap: 3px; justify-content: center; }
-        .xp-control input { width: 50px; padding: 2px; font-size: 0.8rem; text-align: center; background: #111; border: 1px solid #444; color: white; border-radius: 4px; }
-        .xp-control button { background: var(--green); border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold; padding: 0 8px; }
+        /* COMPONENTS */
+        .header-grid { display: grid; grid-template-columns: 140px 1fr; gap: 15px; margin-bottom: 20px; }
+        .avatar-box { width: 140px; height: 140px; border: 2px dashed var(--gold); background-size: cover; background-position: center; border-radius: 8px; background-color: #222; position: relative; cursor: pointer; }
+        .header-inputs label { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .header-inputs input { width: 100%; padding: 8px; background: #111; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+        
+        .stats-bar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-bottom: 15px; }
+        .stat-card { background: #3d3d3d; padding: 5px; border-radius: 6px; text-align: center; border-bottom: 2px solid var(--gold); }
+        .stat-card input { width: 100%; background: transparent; border: none; color: white; text-align: center; font-size: 1.4rem; font-weight: bold; }
+        .stat-mod { font-size: 1rem; color: var(--gold); font-weight: bold; display: block; }
+        
+        .vitals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; background: #222; padding: 10px; border-radius: 8px; }
+        .vital-box input { width: 100%; text-align: center; font-size: 1.2rem; background: #333; border: 1px solid #555; color: white; padding: 5px; border-radius: 4px; }
+        
+        .item-list, .skills-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .inv-slot { background: #2d2d2d; border: 1px solid #444; padding: 10px; border-radius: 4px; display: grid; grid-template-columns: 1fr 40px; gap: 10px; border-left: 3px solid #666; }
+        .inv-slot input, .inv-slot textarea { width: 100%; background: #1a1a1a; border: 1px solid #444; color: white; padding: 5px; margin-bottom: 5px; box-sizing: border-box; }
+        
+        .spell-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 10px; }
+        .spell-slot-card { background: #333; padding: 5px; border-radius: 4px; text-align: center; border: 1px solid #444; cursor: pointer; }
+        .spell-slot-card.flash { background: var(--gold); }
 
-        /* Vitals */
-        .vitals-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; background: #222; padding: 15px; border-radius: 8px; border: 1px solid #444; }
-        .vital-box input { font-size: 1.4rem; font-weight: bold; text-align: center; color: #fff; border: 1px solid #555; background: #333; padding: 5px; border-radius: 4px; width: 100%; }
-        .hp-box input { color: #ff7675; border-color: var(--red); }
-        .ac-box input { color: #74b9ff; border-color: var(--blue); }
+        .add-btn { width: 100%; padding: 10px; border: 2px dashed #444; color: #888; background: transparent; cursor: pointer; margin-top: 10px; }
+        .del-btn { background: var(--red); color: white; border: none; border-radius: 4px; cursor: pointer; }
 
-        /* Stats */
-        .stats-bar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 20px; }
-        .stat-card { background: #3d3d3d; padding: 10px 5px; border-radius: 6px; text-align: center; border-bottom: 3px solid var(--gold); }
-        .stat-row { display: flex; align-items: center; justify-content: center; gap: 4px; }
-        .stat-card input.stat-val { width: 60%; background: transparent; border: none; color: white; text-align: right; font-size: 1.6rem; font-weight: bold; margin: 0; padding: 0; }
-        .stat-card input.stat-temp { width: 35%; background: #222; border: 1px solid var(--blue); color: var(--blue); text-align: center; font-size: 0.9rem; font-weight: bold; border-radius: 4px; padding: 2px; }
-        .stat-mod { display: block; font-size: 1.2rem; color: var(--gold); font-weight: bold; background: #222; border-radius: 4px; margin: 5px auto 0; width: 80%; }
-
-        /* Lists */
-        .bonuses-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .bonus-item { display: flex; gap: 5px; background: #333; padding: 5px; border-radius: 4px; align-items: center; border-left: 3px solid var(--blue); }
-        .bonus-item input[type="text"] { font-weight: bold; }
-        .bonus-item input[type="number"] { width: 50px; text-align: center; color: var(--gold); font-size: 0.9rem; }
-        .traits-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .trait-card { background: #2d2d2d; border: 1px solid #444; border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 5px; position: relative; }
-        .trait-card input { font-weight: bold; color: var(--gold); text-align: center; border: none; background: #222; }
-        .trait-card textarea { resize: none; height: 60px; font-size: 0.85rem; border: none; background: #222; color: #ccc; width: 100%; box-sizing: border-box; font-family: inherit; }
-        .trait-del { position: absolute; top: 0; right: 0; background: var(--red); color: white; border: none; font-size: 0.7rem; cursor: pointer; opacity: 0; width: 20px; height: 20px; border-radius: 0 4px 0 4px; }
-        .trait-card:hover .trait-del { opacity: 1; }
-
-        /* Magic */
-        .spells-wrapper { background: #222; padding: 15px; border-radius: 8px; border: 1px solid #444; }
-        .spell-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-        .spell-slot-card { background: #2d2d2d; padding: 8px; border-radius: 4px; text-align: center; border: 1px solid #444; transition: background 0.3s; }
-        .slot-inputs { display: flex; gap: 5px; align-items: center; justify-content: center; }
-        .slot-inputs input { width: 40px; text-align: center; background: #111; border: 1px solid #555; color: var(--gold); padding: 4px; border-radius: 3px; font-weight: bold; }
-        .spell-slot-card.flash { background: #d4af37; }
-
-        /* Inventory */
-        .inventory-wrapper { background: #222; padding: 15px; border-radius: 8px; border: 1px solid #444; }
-        .currency-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; border-bottom: 1px solid #444; padding-bottom: 15px; }
-        .currency-item input { text-align: center; color: var(--gold); font-weight: bold; background: var(--dark-input); border: 1px solid #444; padding: 5px; border-radius: 4px; }
-        .item-list { display: flex; flex-direction: column; gap: 8px; }
-        .inv-slot { display: grid; grid-template-columns: 30% 1fr 40px; gap: 10px; background: #2d2d2d; padding: 8px; border-radius: 4px; align-items: start; border-left: 3px solid #555; transition: background 0.2s; }
-        .inv-slot input, .inv-slot textarea { background: #1a1a1a; border: 1px solid #444; color: white; padding: 5px; border-radius: 3px; width: 100%; font-family: inherit; }
-        .inv-slot textarea { resize: vertical; min-height: 40px; font-size: 0.9em; }
-
-        /* Skills */
-        .skill-item { background: #383838; padding: 8px 10px; border-radius: 6px; margin-bottom: 8px; position: relative; border-left: 4px solid var(--green); display: flex; flex-direction: column; gap: 5px; }
-        .skill-header { display: flex; gap: 8px; align-items: center; width: 100%; padding-right: 25px; box-sizing: border-box; }
-        .skill-name { font-weight: bold; background: #2b2b2b; border: none; flex-grow: 1; padding: 5px; color:white; border-radius: 3px; }
-        .skill-cast-box { display: flex; gap: 2px; align-items: center; background: #222; padding: 2px; border-radius: 4px; border: 1px solid #555; }
-        .skill-level-input { width: 15px; text-align: center; background: transparent; border: none; color: var(--blue); font-weight: bold; font-size: 0.9rem; }
-        .btn-cast { background: var(--blue); color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 0.75rem; padding: 4px 8px; font-weight: bold; transition: 0.2s; }
-        .skill-item textarea { width: 97.5%; background: #2b2b2b; border: none; color: #e0e0e0; font-family: inherit; font-size: 0.9rem; box-sizing: border-box; padding: 5px; resize: vertical; min-height: 80px; }
-        .skill-controls { position: absolute; top: 5px; right: 5px; display: flex; flex-direction: column; gap: 2px; z-index: 10; }
-
-        /* Controls */
-        .ctrl-btn { background: transparent; border: none; color: #666; cursor: pointer; font-size: 0.9rem; padding: 2px; transition: color 0.2s; }
-        .ctrl-btn:hover { color: var(--gold); }
-        .ctrl-btn.del:hover { color: var(--red); }
-        .add-zone { margin-top: 10px; text-align: center; border: 2px dashed #444; border-radius: 6px; padding: 8px; cursor: pointer; transition: 0.2s; color: #888; font-size: 0.9rem; }
-        .add-zone:hover { border-color: var(--gold); color: var(--gold); background: rgba(255,255,255,0.02); }
-
-        label { display: block; font-size: 0.75rem; color: var(--gold); text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
-        input[type="text"], input[type="number"] { width: 100%; padding: 8px; background: var(--dark-input); border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
-        .notes-area { width: 100%; height: 100%; min-height: 400px; background: #222; border: 1px solid #444; color: #ddd; padding: 15px; border-radius: 8px; font-family: inherit; resize: none; box-sizing: border-box; }
-
-        .controls { display: flex; gap: 10px; margin-top: auto; border-top: 1px solid #444; padding-top: 20px; flex-wrap: wrap; }
-        .btn { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; min-width: 120px; }
-        .btn-save { background: var(--gold); color: black; }
-        .btn-io { background: var(--blue); color: white; }
-        .btn-clear { background: var(--red); color: white; }
-        .btn-cloud { background: var(--purple); color: white; }
-
-        /* MODAL STYLES (New) */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
-        .modal-content { background: var(--card); padding: 20px; border: 1px solid #555; border-radius: 8px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
-        .modal h2 { color: var(--purple); }
-        .modal input { margin-bottom: 10px; width: 100%; }
-        .modal p { font-size: 0.8rem; color: #aaa; margin-bottom: 15px; }
-        .modal-btns { display: flex; gap: 10px; margin-top: 15px; }
-
-        /* === 2. МОБИЛЬНЫЕ ПРАВИЛА (< 800px) === */
-        @media screen and (max-width: 800px) {
-            body { padding: 5px; }
-            .container { padding: 10px; border: none; border-radius: 0; box-shadow: none; }
-            .tabs-nav { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 5px; }
-            .tab-btn { flex: 0 0 auto; padding: 12px 15px; font-size: 1rem; }
+        /* MOBILE FIXES */
+        @media (max-width: 800px) {
             .header-grid { display: flex; flex-direction: column; align-items: center; }
-            .header-main { flex-direction: column; width: 100%; gap: 10px; }
-            .avatar-box { flex-shrink: 0; margin-bottom: 10px; }
-            .stats-bar { grid-template-columns: 1fr 1fr; gap: 10px; }
-            .stat-card input.stat-val { width: 100%; text-align: center; }
-            .stat-card input.stat-temp { width: 80%; display: block; margin: 0 auto; }
-            .stat-row { flex-direction: column; gap: 5px; }
-            .vitals-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-            .vital-box.hp-box { grid-column: span 1; }
-            .bonuses-grid, .traits-grid { grid-template-columns: 1fr; }
-            .inv-slot { grid-template-columns: 1fr; position: relative; padding-bottom: 40px; }
-            .item-controls { position: absolute; bottom: 5px; right: 5px; display: flex; gap: 10px; }
-            .ctrl-btn { font-size: 1.2rem; padding: 5px 10px; border: 1px solid #555; background: rgba(0,0,0,0.3); border-radius: 4px; }
-            .trait-del { opacity: 1; width: 30px; height: 30px; font-size: 1rem; top: -10px; right: -10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 5; }
-            .spell-grid { grid-template-columns: repeat(3, 1fr); }
-            .currency-grid { grid-template-columns: repeat(3, 1fr); }
-            .currency-item:last-child { grid-column: span 3; }
-            input, textarea, select { font-size: 16px !important; }
-            .controls { position: sticky; bottom: 0; background: var(--card); padding-bottom: 15px; z-index: 99; border-top: 2px solid #444; }
-            .tab-pane { padding-bottom: 20px; }
+            .stats-bar { grid-template-columns: 1fr 1fr 1fr; }
+            .vitals-grid { grid-template-columns: 1fr 1fr; }
+            .conn-inputs { flex-direction: column; }
+            input, textarea { font-size: 16px !important; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div class="connection-bar">
+        <div style="display:flex; align-items:center; gap:5px; width:100%; margin-bottom:5px;">
+            <div class="status-dot" id="statusDot"></div>
+            <span class="status-text" id="statusText">Оффлайн</span>
+        </div>
+        <div class="conn-inputs">
+            <input type="text" id="roomInput" placeholder="Комната (напр. Party1)">
+            <input type="text" id="charIdInput" placeholder="Имя Персонажа (ID)">
+            <button onclick="connectToFirebase()" style="background:var(--green); border:none; color:white; border-radius:4px; font-weight:bold; cursor:pointer;">Подключить</button>
+        </div>
+    </div>
+
     <div class="tabs-nav">
-        <button class="tab-btn active" onclick="openTab('main')">🏛️ Главная</button>
-        <button class="tab-btn" onclick="openTab('skills')">⚔️ Способности</button>
-        <button class="tab-btn" onclick="openTab('magic')">🔮 Магия</button>
-        <button class="tab-btn" onclick="openTab('inventory')">🎒 Инвентарь</button>
-        <button class="tab-btn" onclick="openTab('notes')">📝 Заметки</button>
+        <button class="tab-btn active" onclick="openTab('main')">Главная</button>
+        <button class="tab-btn" onclick="openTab('skills')">Навыки</button>
+        <button class="tab-btn" onclick="openTab('inv')">Инвентарь</button>
+        <button class="tab-btn" onclick="openTab('notes')">Заметки</button>
     </div>
 
     <div id="main" class="tab-pane active">
         <div class="header-grid">
-            <div class="avatar-box" id="avatarDisplay" onclick="document.getElementById('fileInput').click()">
-                <span id="uploadHint" style="font-size:0.8rem; text-align:center; color:#777;">Загрузить<br>Аватар</span>
-            </div>
-            <input type="file" id="fileInput" style="display:none" onchange="handleImage(this)">
+            <div class="avatar-box" id="avatarBox" onclick="document.getElementById('fileInput').click()"></div>
+            <input type="file" id="fileInput" style="display:none" onchange="uploadAvatar(this)">
             
-            <div class="header-main">
-                <div class="header-inputs">
-                    <div style="margin-bottom: 10px;">
-                        <label>Имя Героя</label>
-                        <input type="text" id="charName" placeholder="Имя...">
-                    </div>
-                    <div>
-                        <label>Раса и Класс</label>
-                        <input type="text" id="charClass" placeholder="Класс...">
-                    </div>
-                </div>
-                <div class="level-badge">
-                    <span class="lvl-title">Уровень</span>
-                    <span class="lvl-val" id="levelDisplay">1</span>
-                    <div class="xp-display">XP: <span id="totalXpDisplay">0</span></div>
-                    <div class="xp-control">
-                        <input type="number" id="xpInput" placeholder="+XP">
-                        <button onclick="addXp()" title="Добавить опыт">+</button>
-                    </div>
+            <div class="header-inputs">
+                <label>Класс и Раса</label>
+                <input type="text" class="sync-field" data-path="classRace" placeholder="...">
+                <label style="margin-top:10px">Уровень / XP</label>
+                <div style="display:flex; gap:5px;">
+                    <input type="number" class="sync-field" data-path="level" placeholder="Lvl" style="width:60px">
+                    <input type="number" class="sync-field" data-path="xp" placeholder="XP">
                 </div>
             </div>
         </div>
 
         <div class="vitals-grid">
-            <div class="vital-box hp-box"><label>Макс. ХП</label><input type="number" id="maxHp" value="10"></div>
-            <div class="vital-box hp-box"><label>Тек. ХП</label><input type="number" id="currHp" value="10"></div>
-            <div class="vital-box ac-box"><label>Броня</label><input type="number" id="armorClass" value="10"></div>
-            <div class="vital-box"><label>Скорость</label><input type="number" id="speed" value="30"></div>
-            <div class="vital-box"><label>Бон. Маст.</label><input type="number" id="profBonus" value="2"></div>
+            <div class="vital-box"><label>HP Тек.</label><input type="number" class="sync-field" data-path="hpCurr" style="color:#ff7675"></div>
+            <div class="vital-box"><label>HP Макс.</label><input type="number" class="sync-field" data-path="hpMax"></div>
+            <div class="vital-box"><label>Броня (AC)</label><input type="number" class="sync-field" data-path="ac" style="color:#74b9ff"></div>
+            <div class="vital-box"><label>Скорость</label><input type="number" class="sync-field" data-path="speed"></div>
         </div>
 
         <div class="stats-bar">
-            <div class="stat-card"><label>СИЛ</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span></div>
-            <div class="stat-card"><label>ЛОВ</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span></div>
-            <div class="stat-card"><label>ТЕЛ</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span></div>
-            <div class="stat-card"><label>ИНТ</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span></div>
-            <div class="stat-card"><label>МУД</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span></div>
-            <div class="stat-card"><label>ХАР</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span></div>
-        </div>
+            </div>
     </div>
 
     <div id="skills" class="tab-pane">
-        <h3>⚔️ Способности</h3>
-        <div id="skillsList" style="margin-top:10px"></div>
-        <div class="add-zone" onclick="addSkill()">+ Способность</div>
+        <h3>Ячейки Заклинаний</h3>
+        <div class="spell-grid" id="spellSlots"></div>
+        
+        <h3>Способности</h3>
+        <div id="skillsList" class="skills-list"></div>
+        <button class="add-btn" onclick="addItem('skills')">+ Способность</button>
     </div>
 
-    <div id="magic" class="tab-pane">
-        <h3>🧩 Бонусы проверок</h3>
-        <div class="bonuses-grid" id="bonusList"></div>
-        <div class="add-zone" onclick="addBonus()" style="margin-bottom: 20px;">+ Бонус (Например: Восприятие +5)</div>
-
-        <h3>✨ Черты и Особенности</h3>
-        <div class="traits-grid" id="traitsList"></div>
-        <div class="add-zone" onclick="addTrait()">+ Добавить Черту</div>
-
-        <h3 style="margin-top:20px">🔮 Ячейки Заклинаний</h3>
-        <div class="spells-wrapper">
-            <div class="spell-grid" id="spellSlotsContainer"></div>
+    <div id="inv" class="tab-pane">
+        <div class="vitals-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:10px;">
+            <input type="number" class="sync-field" data-path="gold_gp" placeholder="gp">
+            <input type="number" class="sync-field" data-path="gold_sp" placeholder="sp">
+            <input type="number" class="sync-field" data-path="gold_cp" placeholder="cp">
+            <input type="text" class="sync-field" data-path="gold_other" placeholder="др.">
         </div>
-    </div>
-
-    <div id="inventory" class="tab-pane">
-        <div class="inventory-wrapper">
-            <div class="currency-grid">
-                <div class="currency-item"><label>pp</label><input type="number" id="curr-pp" placeholder="0"></div>
-                <div class="currency-item"><label>gp</label><input type="number" id="curr-gp" placeholder="0"></div>
-                <div class="currency-item"><label>sp</label><input type="number" id="curr-sp" placeholder="0"></div>
-                <div class="currency-item"><label>cp</label><input type="number" id="curr-cp" placeholder="0"></div>
-                <div class="currency-item"><label>Монеты душ</label><input type="text" id="curr-custom" placeholder="..."></div>
-            </div>
-            <label style="margin-top:10px;">Предметы</label>
-            <div id="inventoryList" class="item-list"></div>
-            <div class="add-zone" onclick="addItem()">+ Добавить предмет</div>
-        </div>
+        <div id="invList" class="item-list"></div>
+        <button class="add-btn" onclick="addItem('inv')">+ Предмет</button>
     </div>
 
     <div id="notes" class="tab-pane">
-        <textarea id="charNotes" class="notes-area" placeholder="Важные записи..."></textarea>
-    </div>
-
-    <div class="controls">
-        <button class="btn btn-save" onclick="saveCharacter()">💾 Save to browser</button>
-        <button class="btn btn-cloud" onclick="toggleCloudModal()">☁️ Sync</button>
-        <button class="btn btn-io" onclick="exportToFile()">⬇️ Export</button>
-        <button class="btn btn-io" onclick="document.getElementById('importFile').click()">⬆️ Import</button>
-        <input type="file" id="importFile" style="display:none" onchange="importFromFile(this)">
-        <button class="btn btn-clear" onclick="clearCharacter()">🗑️ Clear</button>
+        <textarea class="sync-field" data-path="notes" style="width:100%; height:400px; background:#222; border:1px solid #444; color:#ddd; padding:10px; resize:none;" placeholder="Заметки..."></textarea>
     </div>
 </div>
 
-<div id="cloudModal" class="modal">
-    <div class="modal-content">
-        <h2>GitHub Sync</h2>
-        <p>Нужен Gist ID и Token (с правами 'gist'). Данные сохранятся в браузере.</p>
-        <input type="password" id="ghToken" placeholder="GitHub Token (ghp_...)" onchange="saveCloudConfig()">
-        <input type="text" id="gistId" placeholder="Gist ID (длинный код из URL)" onchange="saveCloudConfig()">
-        <div class="modal-btns">
-            <button class="btn btn-io" onclick="loadFromCloud()">☁️ LoadFromCloud</button>
-            <button class="btn btn-save" onclick="uploadToCloud()">☁️ UploadToCloud</button>
-        </div>
-        <button class="btn btn-clear" style="margin-top:10px" onclick="toggleCloudModal()">Закрыть</button>
-    </div>
-</div>
+<script type="module">
+    // --- 1. FIREBASE SETUP ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-<script>
-    // --- TABS ---
-    function openTab(tabId) {
+    // !!! ВСТАВЬ СЮДА СВОЙ КОНФИГ ИЗ КОНСОЛИ FIREBASE !!!
+    const firebaseConfig = {
+        apiKey: "AIzaSy...",
+        authDomain: "...",
+        databaseURL: "...",
+        projectId: "...",
+        storageBucket: "...",
+        messagingSenderId: "...",
+        appId: "..."
+    };
+
+    // Initialize
+    let app, db, roomRef, charRef;
+    try {
+        app = initializeApp(firebaseConfig);
+        db = getDatabase(app);
+    } catch(e) {
+        console.error("Firebase Config Missing!");
+        document.getElementById('statusText').innerText = "Ошибка конфига (см. код)";
+    }
+
+    // --- 2. LOGIC ---
+    let currentRoom = localStorage.getItem('dnd_room') || '';
+    let currentChar = localStorage.getItem('dnd_char') || '';
+    let isRemoteUpdate = false; // Flag to prevent loop
+
+    // Init UI
+    document.getElementById('roomInput').value = currentRoom;
+    document.getElementById('charIdInput').value = currentChar;
+    generateStatsUI();
+    generateSpellSlotsUI();
+
+    // CONNECT FUNCTION (Expose to window)
+    window.connectToFirebase = function() {
+        const room = document.getElementById('roomInput').value.trim();
+        const char = document.getElementById('charIdInput').value.trim();
+        
+        if(!room || !char) { alert("Введите Комнату и Имя!"); return; }
+
+        localStorage.setItem('dnd_room', room);
+        localStorage.setItem('dnd_char', char);
+        currentRoom = room;
+        currentChar = char;
+
+        const dbPath = `rooms/${room}/characters/${char}`;
+        document.getElementById('statusText').innerText = `Подключение к ${dbPath}...`;
+        
+        charRef = ref(db, dbPath);
+
+        // SUBSCRIBE TO CHANGES
+        onValue(charRef, (snapshot) => {
+            const data = snapshot.val();
+            document.getElementById('statusDot').classList.add('online');
+            document.getElementById('statusText').innerText = "Онлайн (Синхронизировано)";
+            
+            if (data) {
+                isRemoteUpdate = true;
+                applyDataToUI(data);
+                isRemoteUpdate = false;
+            } else {
+                // New character? Init defaults
+                document.getElementById('statusText').innerText = "Новый персонаж";
+            }
+        });
+    };
+
+    // AUTO-CONNECT on load if data exists
+    if(currentRoom && currentChar && app) window.connectToFirebase();
+
+    // --- 3. UI GENERATORS ---
+    function generateStatsUI() {
+        const stats = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'];
+        const container = document.querySelector('.stats-bar');
+        let html = '';
+        stats.forEach(s => {
+            html += `
+            <div class="stat-card">
+                <label style="font-size:0.7rem; color:#888">${s}</label>
+                <input type="number" class="sync-field stat-val" data-path="stats/${s}" value="10" oninput="calcMod(this)">
+                <span class="stat-mod">+0</span>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function generateSpellSlotsUI() {
+        const container = document.getElementById('spellSlots');
+        let html = '';
+        for(let i=1; i<=9; i++) {
+            html += `
+            <div class="spell-slot-card" onclick="castSpell(${i})">
+                <div style="font-size:0.7rem; color:#aaa">Lvl ${i}</div>
+                <span id="spell-curr-${i}">0</span> / <span id="spell-max-${i}">0</span>
+                <div style="display:flex; justify-content:center; gap:2px; margin-top:2px;">
+                    <input type="number" class="sync-field" data-path="spells/lvl${i}_curr" style="width:20px; font-size:0.8rem; padding:0" value="0">
+                    <input type="number" class="sync-field" data-path="spells/lvl${i}_max" style="width:20px; font-size:0.8rem; padding:0" value="0">
+                </div>
+            </div>`;
+        }
+        container.innerHTML = html;
+    }
+
+    // --- 4. DATA HANDLING ---
+    
+    // Generic Save Function
+    function saveData(path, value) {
+        if(!charRef || isRemoteUpdate) return;
+        // Construct update object
+        const updates = {};
+        updates[path] = value;
+        update(charRef, updates);
+    }
+
+    // Apply Firebase Data to Inputs
+    function applyDataToUI(data) {
+        // 1. Simple Fields
+        document.querySelectorAll('.sync-field').forEach(input => {
+            const path = input.getAttribute('data-path');
+            // Traverse data object using path "stats/STR"
+            const keys = path.split('/');
+            let val = data;
+            for(let k of keys) { val = val ? val[k] : ''; }
+            
+            // Only update if not currently focused (to avoid jumping cursor)
+            if(document.activeElement !== input) {
+                input.value = (val !== undefined) ? val : '';
+            }
+            
+            // Recalc mods if needed
+            if(input.classList.contains('stat-val')) calcMod(input);
+        });
+
+        // 2. Avatar
+        if(data.avatar) {
+            document.getElementById('avatarBox').style.backgroundImage = `url(${data.avatar})`;
+        }
+
+        // 3. Lists (Complex!)
+        renderList('inv', data.inv || {});
+        renderList('skills', data.skills || {});
+    }
+
+    // --- 5. EVENT LISTENERS ---
+    
+    // Listen to ALL sync-fields
+    document.addEventListener('change', (e) => {
+        if(e.target.classList.contains('sync-field')) {
+            const path = e.target.getAttribute('data-path');
+            let val = e.target.value;
+            if(e.target.type === 'number') val = parseFloat(val) || 0;
+            saveData(path, val);
+        }
+    });
+
+    // Helper: Stat Modifier
+    window.calcMod = function(input) {
+        const val = parseInt(input.value) || 10;
+        const mod = Math.floor((val - 10) / 2);
+        const display = (mod >= 0 ? '+' : '') + mod;
+        input.parentElement.querySelector('.stat-mod').innerText = display;
+    }
+
+    // Helper: Avatar Upload
+    window.uploadAvatar = function(input) {
+        if(input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const b64 = e.target.result;
+                document.getElementById('avatarBox').style.backgroundImage = `url(${b64})`;
+                saveData('avatar', b64);
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // --- 6. LIST MANAGEMENT (Inventory/Skills) ---
+    
+    window.addItem = function(type) {
+        if(!charRef) { alert("Сначала подключитесь!"); return; }
+        const newKey = Date.now(); // Simple unique ID
+        const updates = {};
+        updates[`${type}/${newKey}`] = { name: "", desc: "" };
+        update(charRef, updates);
+    }
+
+    window.deleteItem = function(type, key) {
+        if(confirm("Удалить?")) {
+            const updates = {};
+            updates[`${type}/${key}`] = null; // Deletes from Firebase
+            update(charRef, updates);
+        }
+    }
+
+    window.updateItem = function(el, type, key, field) {
+        if(isRemoteUpdate) return;
+        const path = `${type}/${key}/${field}`;
+        saveData(path, el.value);
+    }
+
+    function renderList(type, dataObj) {
+        const container = document.getElementById(type === 'inv' ? 'invList' : 'skillsList');
+        container.innerHTML = '';
+        
+        Object.keys(dataObj).forEach(key => {
+            const item = dataObj[key];
+            const div = document.createElement('div');
+            div.className = 'inv-slot';
+            div.innerHTML = `
+                <div>
+                    <input type="text" placeholder="Название" value="${item.name || ''}" 
+                           onchange="updateItem(this, '${type}', '${key}', 'name')">
+                    <textarea placeholder="Описание" onchange="updateItem(this, '${type}', '${key}', 'desc')">${item.desc || ''}</textarea>
+                </div>
+                <button class="del-btn" onclick="deleteItem('${type}', '${key}')">✖</button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // --- 7. TABS ---
+    window.openTab = function(tabId) {
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
@@ -279,396 +368,7 @@
             if(b.getAttribute('onclick').includes(tabId)) b.classList.add('active');
         });
     }
-
-    // --- XP LOGIC ---
-    let globalXp = 0;
-    const xpTable = [
-        { lvl: 20, xp: 355000 }, { lvl: 19, xp: 305000 }, { lvl: 18, xp: 265000 }, { lvl: 17, xp: 225000 },
-        { lvl: 16, xp: 195000 }, { lvl: 15, xp: 165000 }, { lvl: 14, xp: 140000 }, { lvl: 13, xp: 120000 },
-        { lvl: 12, xp: 100000 }, { lvl: 11, xp: 85000 }, { lvl: 10, xp: 64000 }, { lvl: 9, xp: 48000 },
-        { lvl: 8, xp: 34000 }, { lvl: 7, xp: 23000 }, { lvl: 6, xp: 14000 }, { lvl: 5, xp: 6500 },
-        { lvl: 4, xp: 2700 }, { lvl: 3, xp: 900 }, { lvl: 2, xp: 300 }, { lvl: 1, xp: 0 }
-    ];
-    function updateLevelUI() {
-        document.getElementById('totalXpDisplay').innerText = globalXp.toLocaleString();
-        let level = 1;
-        for (let step of xpTable) {
-            if (globalXp >= step.xp) {
-                level = step.lvl;
-                break;
-            }
-        }
-        document.getElementById('levelDisplay').innerText = level;
-    }
-    function addXp() {
-        const input = document.getElementById('xpInput');
-        const val = parseInt(input.value);
-        if (!isNaN(val)) {
-            globalXp += val;
-            if (globalXp < 0) globalXp = 0;
-            updateLevelUI();
-            input.value = '';
-        }
-    }
-
-    // --- REORDER ---
-    function moveUp(btn) {
-        const item = btn.closest('.inv-slot') || btn.closest('.skill-item');
-        if (item && item.previousElementSibling) item.parentNode.insertBefore(item, item.previousElementSibling);
-    }
-    function moveDown(btn) {
-        const item = btn.closest('.inv-slot') || btn.closest('.skill-item');
-        if (item && item.nextElementSibling) item.parentNode.insertBefore(item.nextElementSibling, item);
-    }
-
-    // --- MAGIC ---
-    function initSpellSlots() {
-        const container = document.getElementById('spellSlotsContainer');
-        const levels = ["Пакт", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-        let html = '';
-        levels.forEach((lvl, index) => {
-            let key = index === 0 ? 'pact' : 'lvl' + index;
-            html += `
-                <div class="spell-slot-card" data-key="${key}">
-                    <label style="border-bottom:1px solid #444; padding-bottom:2px; margin-bottom:4px; color:#aaa; font-size:0.7rem">${lvl}</label>
-                    <div class="slot-inputs">
-                        <input type="number" class="slot-current" placeholder="0"> <span style="color:#666">/</span>
-                        <input type="number" class="slot-max" placeholder="0">
-                    </div>
-                </div>`;
-        });
-        container.innerHTML = html;
-    }
-    initSpellSlots();
-
-    function useSpellSlot(btn) {
-        const row = btn.closest('.skill-header');
-        const lvlInput = row.querySelector('.skill-level-input');
-        const lvl = parseInt(lvlInput.value);
-
-        if (isNaN(lvl) || lvl < 0 || lvl > 9) {
-            alert("Укажите уровень ячейки (0-9)");
-            return;
-        }
-        if (lvl === 0) {
-            flashBtn(btn);
-            return; 
-        }
-
-        const key = 'lvl' + lvl;
-        const slotCard = document.querySelector(`.spell-slot-card[data-key="${key}"]`);
-        if (!slotCard) { alert("Ошибка ячеек"); return; }
-
-        const currInput = slotCard.querySelector('.slot-current');
-        let currentVal = parseInt(currInput.value) || 0;
-
-        if (currentVal > 0) {
-            currInput.value = currentVal - 1;
-            flashBtn(btn);
-            slotCard.classList.add('flash');
-            setTimeout(() => slotCard.classList.remove('flash'), 1000);
-            saveCharacter(); 
-        } else {
-            alert(`Нет ячеек ${lvl} уровня!`);
-        }
-    }
-
-    function flashBtn(btn) {
-        btn.style.background = "#27ae60";
-        btn.innerText = "✓";
-        setTimeout(() => { btn.style.background = ""; btn.innerText = "Cast"; }, 1000);
-    }
-
-    function calcMod(input) {
-        const card = input.closest('.stat-card');
-        const base = parseInt(card.querySelector('.stat-val').value) || 0;
-        const temp = parseInt(card.querySelector('.stat-temp').value) || 0;
-        const baseMod = Math.floor((base - 10) / 2);
-        const totalMod = baseMod + temp;
-        card.querySelector('.stat-mod').innerText = (totalMod >= 0 ? '+' : '') + totalMod;
-    }
-
-    // --- DOM GENERATORS ---
-    function addItem(name = '', desc = '') {
-        const div = document.createElement('div');
-        div.className = 'inv-slot';
-        div.innerHTML = `
-            <input type="text" class="item-name" placeholder="Название" value="${name}">
-            <textarea class="item-desc" placeholder="Описание...">${desc}</textarea>
-            <div class="item-controls">
-                <button class="ctrl-btn" onclick="moveUp(this)">▲</button>
-                <button class="ctrl-btn del" onclick="this.closest('.inv-slot').remove()">✖</button>
-                <button class="ctrl-btn" onclick="moveDown(this)">▼</button>
-            </div>`;
-        document.getElementById('inventoryList').appendChild(div);
-    }
-    function addSkill(name = '', desc = '', cost = '') {
-        const div = document.createElement('div');
-        div.className = 'skill-item';
-        div.innerHTML = `
-            <div class="skill-controls">
-                <button class="ctrl-btn" onclick="moveUp(this)">▲</button>
-                <button class="ctrl-btn del" onclick="this.closest('.skill-item').remove()">✖</button>
-                <button class="ctrl-btn" onclick="moveDown(this)">▼</button>
-            </div>
-            <div class="skill-header">
-                <input type="text" class="skill-name" placeholder="Название" value="${name}">
-                <div class="skill-cast-box">
-                    <input type="number" class="skill-level-input" placeholder="Lvl" value="${cost}">
-                    <button class="btn-cast" onclick="useSpellSlot(this)">Cast</button>
-                </div>
-            </div>
-            <textarea placeholder="Детали...">${desc}</textarea>`;
-        document.getElementById('skillsList').appendChild(div);
-    }
-    function addBonus(name = '', val = '') {
-        const div = document.createElement('div');
-        div.className = 'bonus-item';
-        div.innerHTML = `
-            <input type="text" class="bonus-name" placeholder="Навык" value="${name}">
-            <input type="number" class="bonus-val" placeholder="+0" value="${val}">
-            <button class="ctrl-btn del" onclick="this.closest('.bonus-item').remove()">✖</button>
-        `;
-        document.getElementById('bonusList').appendChild(div);
-    }
-    function addTrait(name = '', desc = '') {
-        const div = document.createElement('div');
-        div.className = 'trait-card';
-        div.innerHTML = `
-            <button class="trait-del" onclick="this.closest('.trait-card').remove()">✖</button>
-            <input type="text" class="trait-name" placeholder="Черта" value="${name}">
-            <textarea class="trait-desc" placeholder="Описание...">${desc}</textarea>
-        `;
-        document.getElementById('traitsList').appendChild(div);
-    }
-
-    let avatarBase64 = "";
-    function handleImage(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                avatarBase64 = e.target.result;
-                document.getElementById('avatarDisplay').style.backgroundImage = `url(${avatarBase64})`;
-                document.getElementById('uploadHint').style.display = 'none';
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    // --- DATA ---
-    function gatherData() {
-        const items = [];
-        document.querySelectorAll('.inv-slot').forEach(r => items.push({ name: r.querySelector('.item-name').value, desc: r.querySelector('.item-desc').value }));
-        const skills = [];
-        document.querySelectorAll('.skill-item').forEach(i => skills.push({ 
-            name: i.querySelector('.skill-name').value, 
-            desc: i.querySelector('textarea').value,
-            cost: i.querySelector('.skill-level-input').value
-        }));
-        const bonuses = [];
-        document.querySelectorAll('.bonus-item').forEach(b => bonuses.push({ name: b.querySelector('.bonus-name').value, val: b.querySelector('.bonus-val').value }));
-        const traits = [];
-        document.querySelectorAll('.trait-card').forEach(t => traits.push({ name: t.querySelector('.trait-name').value, desc: t.querySelector('.trait-desc').value }));
-        const stats = Array.from(document.querySelectorAll('.stat-card .stat-val')).map(i => i.value);
-        const statsTemp = Array.from(document.querySelectorAll('.stat-card .stat-temp')).map(i => i.value);
-        const spellData = {};
-        document.querySelectorAll('.spell-slot-card').forEach(c => {
-            spellData[c.getAttribute('data-key')] = { curr: c.querySelector('.slot-current').value, max: c.querySelector('.slot-max').value };
-        });
-
-        return {
-            name: document.getElementById('charName').value,
-            class: document.getElementById('charClass').value,
-            maxHp: document.getElementById('maxHp').value,
-            currHp: document.getElementById('currHp').value,
-            armorClass: document.getElementById('armorClass').value,
-            speed: document.getElementById('speed').value,
-            profBonus: document.getElementById('profBonus').value,
-            totalXp: globalXp,
-            currency: {
-                pp: document.getElementById('curr-pp').value, gp: document.getElementById('curr-gp').value,
-                sp: document.getElementById('curr-sp').value, cp: document.getElementById('curr-cp').value,
-                custom: document.getElementById('curr-custom').value
-            },
-            stats, statsTemp, items, skills, bonuses, traits, spells: spellData, 
-            notes: document.getElementById('charNotes').value, avatar: avatarBase64
-        };
-    }
-
-    function saveCharacter() {
-        const data = gatherData();
-        localStorage.setItem('dnd_char_v9', JSON.stringify(data)); 
-        const btn = document.querySelector('.btn-save');
-        btn.innerText = "✓";
-        setTimeout(() => btn.innerText = "💾 Save", 1500);
-    }
-
-    function loadCharacter(data = null) {
-        if(!data) {
-            const json = localStorage.getItem('dnd_char_v9') || localStorage.getItem('dnd_char_v8');
-            if (!json) return;
-            data = JSON.parse(json);
-        }
-        document.getElementById('charName').value = data.name || '';
-        document.getElementById('charClass').value = data.class || '';
-        document.getElementById('maxHp').value = data.maxHp || 10;
-        document.getElementById('currHp').value = data.currHp || 10;
-        document.getElementById('armorClass').value = data.armorClass || 10;
-        document.getElementById('speed').value = data.speed || 30;
-        document.getElementById('profBonus').value = data.profBonus || 2;
-        document.getElementById('charNotes').value = data.notes || '';
-        globalXp = data.totalXp || 0;
-        updateLevelUI();
-
-        if (data.currency) ['pp','gp','sp','cp','custom'].forEach(k => document.getElementById('curr-'+k).value = data.currency[k] || '');
-        const statInputs = document.querySelectorAll('.stat-card .stat-val');
-        const statTemps = document.querySelectorAll('.stat-card .stat-temp');
-        if (data.stats) data.stats.forEach((v, i) => { if(statInputs[i]) statInputs[i].value = v; });
-        if (data.statsTemp) data.statsTemp.forEach((v, i) => { if(statTemps[i]) statTemps[i].value = v; });
-        statInputs.forEach(input => calcMod(input));
-
-        if (data.spells) {
-            document.querySelectorAll('.spell-slot-card').forEach(card => {
-                const key = card.getAttribute('data-key');
-                if (data.spells[key]) {
-                    card.querySelector('.slot-current').value = data.spells[key].curr;
-                    card.querySelector('.slot-max').value = data.spells[key].max;
-                }
-            });
-        }
-        if (data.avatar) {
-            avatarBase64 = data.avatar;
-            document.getElementById('avatarDisplay').style.backgroundImage = `url(${data.avatar})`;
-            document.getElementById('uploadHint').style.display = 'none';
-        }
-
-        document.getElementById('inventoryList').innerHTML = '';
-        if (data.items) data.items.forEach(item => addItem(item.name, item.desc));
-        document.getElementById('skillsList').innerHTML = '';
-        if (data.skills) data.skills.forEach(s => addSkill(s.name, s.desc, s.cost));
-        document.getElementById('bonusList').innerHTML = '';
-        if (data.bonuses) data.bonuses.forEach(b => addBonus(b.name, b.val));
-        document.getElementById('traitsList').innerHTML = '';
-        if (data.traits) data.traits.forEach(t => addTrait(t.name, t.desc));
-    }
-
-    // --- CLOUD SYNC LOGIC ---
-    function toggleCloudModal() {
-        const m = document.getElementById('cloudModal');
-        m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
-        // Load config
-        if(localStorage.getItem('gh_token')) document.getElementById('ghToken').value = localStorage.getItem('gh_token');
-        if(localStorage.getItem('gh_gist')) document.getElementById('gistId').value = localStorage.getItem('gh_gist');
-    }
-
-    function saveCloudConfig() {
-        const t = document.getElementById('ghToken').value.trim();
-        const g = document.getElementById('gistId').value.trim();
-        if(t) localStorage.setItem('gh_token', t);
-        if(g) localStorage.setItem('gh_gist', g);
-    }
-
-    async function uploadToCloud() {
-        const token = localStorage.getItem('gh_token');
-        const gistId = localStorage.getItem('gh_gist');
-        if(!token || !gistId) { alert("Сначала укажите Token и Gist ID!"); return; }
-
-        const data = gatherData();
-        const btn = document.querySelector('.btn-save'); // визуально меняем кнопку сохранения
-
-        try {
-            const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    files: {
-                        'hero.json': {
-                            content: JSON.stringify(data)
-                        }
-                    }
-                })
-            });
-
-            if(res.ok) {
-                alert("Успешно загружено в облако! ☁️");
-                toggleCloudModal();
-            } else {
-                alert("Ошибка загрузки! Проверьте токен и ID.");
-                console.error(await res.json());
-            }
-        } catch(e) {
-            alert("Ошибка сети!");
-        }
-    }
-
-    async function loadFromCloud() {
-        const token = localStorage.getItem('gh_token');
-        const gistId = localStorage.getItem('gh_gist');
-        if(!token || !gistId) { alert("Укажите данные!"); return; }
-
-        try {
-            const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-                headers: { 'Authorization': `token ${token}` }
-            });
-            
-            if(res.ok) {
-                const json = await res.json();
-                if(json.files && json.files['hero.json']) {
-                    const charData = JSON.parse(json.files['hero.json'].content);
-                    loadCharacter(charData);
-                    saveCharacter(); // save to local
-                    alert("Персонаж загружен из облака! ☁️");
-                    toggleCloudModal();
-                } else {
-                    alert("В этом Gist нет файла hero.json!");
-                }
-            } else {
-                alert("Ошибка скачивания!");
-            }
-        } catch(e) {
-            alert("Ошибка сети или парсинга!");
-            console.error(e);
-        }
-    }
-
-    function exportToFile() {
-        const data = gatherData();
-        const json = JSON.stringify(data, null, 2);
-        const blob = new Blob([json], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        const timestamp = new Date().toISOString().slice(0, 19).replace('T', '_').replace(/:/g, '-');
-        a.href = url;
-        a.download = `hero_${data.name || 'unnamed'}_${timestamp}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-    function importFromFile(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    loadCharacter(data);
-                    saveCharacter(); 
-                    alert("Загружено!");
-                } catch(err) { alert("Ошибка файла!"); }
-            };
-            reader.readAsText(input.files[0]);
-        }
-        input.value = ''; 
-    }
-    function clearCharacter() {
-        if(confirm('Удалить данные?')) {
-            localStorage.removeItem('dnd_char_v9');
-            location.reload();
-        }
-    }
-
-    window.onload = () => loadCharacter();
 </script>
+
 </body>
 </html>
