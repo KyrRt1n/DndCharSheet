@@ -71,6 +71,12 @@
         .slot-inputs { display: flex; gap: 5px; align-items: center; justify-content: center; }
         .slot-inputs input { width: 40px; text-align: center; background: #111; border: 1px solid #555; color: var(--gold); padding: 4px; border-radius: 3px; font-weight: bold; }
         .spell-slot-card.flash { background: #d4af37; }
+        .rest-btn { background: #333; color: white; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: bold; transition: 0.2s; }
+        .rest-btn:hover { background: #444; color: var(--gold); border-color: var(--gold); }
+        .rest-btn.short:hover { color: var(--blue); border-color: var(--blue); }
+        .rest-btn.long:hover { color: var(--green); border-color: var(--green); }
+        .magic-header-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px dashed #555; padding-bottom: 5px; }
+        .magic-header-bar h3 { border: none; margin: 0; padding: 0; }
 
         /* Inventory */
         .inventory-wrapper { background: #222; padding: 15px; border-radius: 8px; border: 1px solid #444; }
@@ -143,6 +149,7 @@
             input, textarea, select { font-size: 16px !important; }
             .controls { position: sticky; bottom: 0; background: var(--card); padding-bottom: 15px; z-index: 99; border-top: 2px solid #444; }
             .tab-pane { padding-bottom: 20px; }
+            .magic-header-bar { flex-direction: column; gap: 10px; align-items: flex-start; }
         }
     </style>
 </head>
@@ -220,7 +227,13 @@
         <div class="traits-grid" id="traitsList"></div>
         <div class="add-zone" onclick="addTrait()">+ Добавить Черту</div>
 
-        <h3 style="margin-top:20px">🔮 Ячейки Заклинаний</h3>
+        <div class="magic-header-bar">
+            <h3>🔮 Ячейки Заклинаний</h3>
+            <div style="display: flex; gap: 10px;">
+                <button class="rest-btn short" onclick="shortRest()">☕ Короткий отдых</button>
+                <button class="rest-btn long" onclick="longRest()">⛺ Долгий отдых</button>
+            </div>
+        </div>
         <div class="spells-wrapper">
             <div class="spell-grid" id="spellSlotsContainer"></div>
         </div>
@@ -321,7 +334,7 @@
         if (item && item.nextElementSibling) item.parentNode.insertBefore(item.nextElementSibling, item);
     }
 
-    // --- MAGIC ---
+    // --- MAGIC & REST ---
     function initSpellSlots() {
         const container = document.getElementById('spellSlotsContainer');
         const levels = ["Пакт", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
@@ -340,6 +353,37 @@
         container.innerHTML = html;
     }
     initSpellSlots();
+
+    function longRest() {
+        if(!confirm("Совершить Долгий отдых? (Восстановит все ХП и ячейки заклинаний)")) return;
+        
+        // Восстановление ХП
+        const maxHp = document.getElementById('maxHp').value;
+        if(maxHp) document.getElementById('currHp').value = maxHp;
+
+        // Восстановление всех ячеек
+        document.querySelectorAll('.spell-slot-card').forEach(card => {
+            const max = card.querySelector('.slot-max').value;
+            if(max) card.querySelector('.slot-current').value = max;
+        });
+
+        saveCharacter();
+        alert("⛺ Вы отлично выспались! ХП и ячейки восстановлены.");
+    }
+
+    function shortRest() {
+        if(!confirm("Совершить Короткий отдых? (Восстановит ячейки Пакта)")) return;
+
+        // Восстановление только ячеек Пакта
+        const pactCard = document.querySelector('.spell-slot-card[data-key="pact"]');
+        if(pactCard) {
+            const max = pactCard.querySelector('.slot-max').value;
+            if(max) pactCard.querySelector('.slot-current').value = max;
+        }
+
+        saveCharacter();
+        alert("☕ Вы перевели дух. Ячейки Пакта восстановлены.");
+    }
 
     function useSpellSlot(btn) {
         const row = btn.closest('.skill-header');
@@ -574,7 +618,7 @@
         if(!token || !gistId) { alert("Сначала укажите Token и Gist ID!"); return; }
 
         const data = gatherData();
-        const btn = document.querySelector('.btn-save'); // визуально меняем кнопку сохранения
+        const btn = document.querySelector('.btn-save'); 
 
         try {
             const res = await fetch(`https://api.github.com/gists/${gistId}`, {
@@ -619,7 +663,7 @@
                 if(json.files && json.files['hero.json']) {
                     const charData = JSON.parse(json.files['hero.json'].content);
                     loadCharacter(charData);
-                    saveCharacter(); // save to local
+                    saveCharacter(); 
                     alert("Персонаж загружен из облака! ☁️");
                     toggleCloudModal();
                 } else {
