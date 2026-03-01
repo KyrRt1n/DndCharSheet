@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐉</text></svg>">
-    <title>D&D Hero Sheet v18 (Spell links and DC button)</title>
+    <title>D&D Hero Sheet v19 (Known charaters)</title>
     <style>
         /* === 1. БАЗОВЫЕ СТИЛИ (ПК) === */
         :root { --gold: #d4af37; --bg: #1a1a1a; --card: #2d2d2d; --text: #e0e0e0; --red: #c0392b; --green: #27ae60; --blue: #2980b9; --purple: #9b59b6; --dark-input: #111; --tab-inactive: #333; }
@@ -113,6 +113,11 @@
 
         label { display: block; font-size: 0.75rem; color: var(--gold); text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
         input[type="text"], input[type="number"] { width: 100%; padding: 8px; background: var(--dark-input); border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
+        .npc-card { background: #2d2d2d; border: 1px solid #444; border-left: 3px solid var(--gold); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 6px; position: relative; }
+        .npc-name { font-weight: bold; font-size: 1rem; color: var(--gold); background: #222; border: none; border-bottom: 1px solid #444; padding: 5px 6px; width: 100%; box-sizing: border-box; border-radius: 3px 3px 0 0; }
+        .npc-desc { background: #222; border: none; color: #ccc; font-family: inherit; font-size: 0.9rem; padding: 6px; border-radius: 4px; resize: vertical; min-height: 70px; width: 100%; box-sizing: border-box; }
+        .npc-del { position: absolute; top: 6px; right: 6px; background: var(--red); color: white; border: none; font-size: 0.75rem; cursor: pointer; opacity: 0; width: 22px; height: 22px; border-radius: 4px; }
+        .npc-card:hover .npc-del { opacity: 1; }
         .notes-area { width: 100%; height: 100%; min-height: 400px; background: #222; border: 1px solid #444; color: #ddd; padding: 15px; border-radius: 8px; font-family: inherit; resize: none; box-sizing: border-box; }
 
         .controls { display: flex; gap: 10px; margin-top: auto; border-top: 1px solid #444; padding-top: 20px; flex-wrap: wrap; }
@@ -278,7 +283,10 @@
     </div>
 
     <div id="notes" class="tab-pane">
-        <textarea id="charNotes" class="notes-area" placeholder="Важные записи..."></textarea>
+        <textarea id="charNotes" class="notes-area" placeholder="Важные записи..." style="min-height:200px;"></textarea>
+        <h3 style="margin-top:20px;">🧑‍🤝‍🧑 Известные персонажи</h3>
+        <div id="npcList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px;"></div>
+        <div class="add-zone" onclick="addNpc()">+ Добавить персонажа</div>
     </div>
 
     <div class="controls">
@@ -645,6 +653,7 @@
             },
             stats, statsTemp, items, skills, bonuses, traits, spells: spellData, 
             notes: document.getElementById('charNotes').value, avatar: avatarBase64,
+            npcs: Array.from(document.querySelectorAll('.npc-card')).map(c => ({ name: c.querySelector('.npc-name').value, desc: c.querySelector('.npc-desc').value })),
             spellDC: document.getElementById('spellDC').value,
             dcStat: document.getElementById('dcStat').value
         };
@@ -707,6 +716,19 @@
         if (data.bonuses) data.bonuses.forEach(b => addBonus(b.name, b.val));
         document.getElementById('traitsList').innerHTML = '';
         if (data.traits) data.traits.forEach(t => addTrait(t.name, t.desc));
+        document.getElementById('npcList').innerHTML = '';
+        if (data.npcs) data.npcs.forEach(n => addNpc(n.name, n.desc));
+    }
+
+    function addNpc(name = '', desc = '') {
+        const div = document.createElement('div');
+        div.className = 'npc-card';
+        div.innerHTML = `
+            <button class="npc-del" onclick="this.closest('.npc-card').remove(); saveCharacter()">✖</button>
+            <input type="text" class="npc-name" placeholder="Имя персонажа..." value="${name.replace(/"/g,'&quot;')}">
+            <textarea class="npc-desc" placeholder="Заметки о персонаже...">${desc}</textarea>`;
+        document.getElementById('npcList').appendChild(div);
+        if (!name) div.querySelector('.npc-name').focus();
     }
 
     // --- CLOUD SYNC LOGIC ---
