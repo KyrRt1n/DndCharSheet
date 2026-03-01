@@ -95,6 +95,12 @@
         .skill-cast-box { display: flex; gap: 2px; align-items: center; background: #222; padding: 2px; border-radius: 4px; border: 1px solid #555; }
         .skill-level-input { width: 15px; text-align: center; background: transparent; border: none; color: var(--blue); font-weight: bold; font-size: 0.9rem; }
         .btn-cast { background: var(--blue); color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 0.75rem; padding: 4px 8px; font-weight: bold; transition: 0.2s; }
+        .skill-link-box { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+        .spell-link-btn { background: #2c3e2c; border: 1px solid #27ae60; color: #2ecc71; border-radius: 3px; font-size: 0.72rem; padding: 4px 7px; font-weight: bold; text-decoration: none; white-space: nowrap; transition: 0.2s; }
+        .spell-link-btn:hover { background: #27ae60; color: white; }
+        .spell-link-edit { background: transparent; border: 1px solid #555; color: #aaa; border-radius: 3px; cursor: pointer; font-size: 0.75rem; padding: 3px 5px; transition: 0.2s; }
+        .spell-link-edit:hover { border-color: var(--gold); color: var(--gold); }
+        .skill-link-input { width: 160px; font-size: 0.78rem; padding: 3px 5px; background: #111; border: 1px solid var(--gold); color: white; border-radius: 3px; }
         .skill-item textarea { width: 97.5%; background: #2b2b2b; border: none; color: #e0e0e0; font-family: inherit; font-size: 0.9rem; box-sizing: border-box; padding: 5px; resize: vertical; min-height: 80px; }
         .skill-controls { position: absolute; top: 5px; right: 5px; display: flex; flex-direction: column; gap: 2px; z-index: 10; }
 
@@ -509,9 +515,10 @@
             </div>`;
         document.getElementById('inventoryList').appendChild(div);
     }
-    function addSkill(name = '', desc = '', cost = '') {
+    function addSkill(name = '', desc = '', cost = '', link = '') {
         const div = document.createElement('div');
         div.className = 'skill-item';
+        const escapedLink = link.replace(/"/g, '&quot;');
         div.innerHTML = `
             <div class="skill-controls">
                 <button class="ctrl-btn" onclick="moveUp(this)">▲</button>
@@ -520,6 +527,11 @@
             </div>
             <div class="skill-header">
                 <input type="text" class="skill-name" placeholder="Название" value="${name}">
+                <div class="skill-link-box">
+                    <a class="spell-link-btn" href="${escapedLink}" target="_blank" rel="noopener" title="Открыть ссылку на заклинание" style="${link ? '' : 'opacity:0.4;pointer-events:none;'}">📖 Spell Link</a>
+                    <button class="spell-link-edit" onclick="editSpellLink(this)" title="Редактировать ссылку">✏️</button>
+                    <input type="url" class="skill-link-input" placeholder="https://..." value="${escapedLink}" style="display:none;" onblur="saveSpellLink(this)" onkeydown="if(event.key==='Enter')this.blur()">
+                </div>
                 <div class="skill-cast-box">
                     <input type="number" class="skill-level-input" placeholder="Lvl" value="${cost}">
                     <button class="btn-cast" onclick="useSpellSlot(this)">Cast</button>
@@ -562,6 +574,39 @@
         }
     }
 
+    // --- SPELL LINK ---
+    function editSpellLink(btn) {
+        const box = btn.closest('.skill-link-box');
+        const input = box.querySelector('.skill-link-input');
+        const linkBtn = box.querySelector('.spell-link-btn');
+        const isEditing = input.style.display !== 'none';
+        if (isEditing) {
+            saveSpellLink(input);
+        } else {
+            input.style.display = 'block';
+            linkBtn.style.display = 'none';
+            input.focus();
+            input.select();
+        }
+    }
+    function saveSpellLink(input) {
+        const box = input.closest('.skill-link-box');
+        const linkBtn = box.querySelector('.spell-link-btn');
+        const url = input.value.trim();
+        input.style.display = 'none';
+        linkBtn.style.display = '';
+        if (url) {
+            linkBtn.href = url;
+            linkBtn.style.opacity = '1';
+            linkBtn.style.pointerEvents = '';
+        } else {
+            linkBtn.href = '';
+            linkBtn.style.opacity = '0.4';
+            linkBtn.style.pointerEvents = 'none';
+        }
+        saveCharacter();
+    }
+
     // --- DATA ---
     function gatherData() {
         const items = [];
@@ -570,7 +615,8 @@
         document.querySelectorAll('.skill-item').forEach(i => skills.push({ 
             name: i.querySelector('.skill-name').value, 
             desc: i.querySelector('textarea').value,
-            cost: i.querySelector('.skill-level-input').value
+            cost: i.querySelector('.skill-level-input').value,
+            link: i.querySelector('.skill-link-input').value || ''
         }));
         const bonuses = [];
         document.querySelectorAll('.bonus-item').forEach(b => bonuses.push({ name: b.querySelector('.bonus-name').value, val: b.querySelector('.bonus-val').value }));
@@ -656,7 +702,7 @@
         document.getElementById('inventoryList').innerHTML = '';
         if (data.items) data.items.forEach(item => addItem(item.name, item.desc));
         document.getElementById('skillsList').innerHTML = '';
-        if (data.skills) data.skills.forEach(s => addSkill(s.name, s.desc, s.cost));
+        if (data.skills) data.skills.forEach(s => addSkill(s.name, s.desc, s.cost, s.link || ''));
         document.getElementById('bonusList').innerHTML = '';
         if (data.bonuses) data.bonuses.forEach(b => addBonus(b.name, b.val));
         document.getElementById('traitsList').innerHTML = '';
