@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐉</text></svg>">
-    <title>D&D Hero Sheet v21 (СSS, lang's and ability's)</title>
+    <title>D&D Hero Sheet v22 (Item icons, race/class links)</title>
     <style>
         /* === 1. БАЗОВЫЕ СТИЛИ (ПК) === */
         :root { --gold: #d4af37; --bg: #1a1a1a; --card: #2d2d2d; --text: #e0e0e0; --red: #c0392b; --green: #27ae60; --blue: #2980b9; --purple: #9b59b6; --dark-input: #111; --tab-inactive: #333; }
@@ -96,9 +96,20 @@
         .currency-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; border-bottom: 1px solid #444; padding-bottom: 15px; }
         .currency-item input { text-align: center; color: var(--gold); font-weight: bold; background: var(--dark-input); border: 1px solid #444; padding: 5px; border-radius: 4px; }
         .item-list { display: flex; flex-direction: column; gap: 8px; }
-        .inv-slot { display: grid; grid-template-columns: 30% 1fr 40px; gap: 10px; background: #2d2d2d; padding: 8px; border-radius: 4px; align-items: start; border-left: 3px solid #555; transition: background 0.2s; }
         .inv-slot input, .inv-slot textarea { background: #1a1a1a; border: 1px solid #444; color: white; padding: 5px; border-radius: 3px; width: 100%; font-family: inherit; }
-        .inv-slot textarea { resize: vertical; min-height: 40px; font-size: 0.9em; }
+        .inv-slot textarea { resize: vertical; min-height: 70px; font-size: 0.9em; }
+
+        /* Item icon */
+        .item-icon-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+        .item-icon { width: 80px; height: 80px; border-radius: 6px; border: 2px dashed #555;
+            background: #1a1a1a; object-fit: cover; cursor: pointer; display: block;
+            transition: border-color 0.2s; }
+        .item-icon:hover { border-color: var(--gold); }
+        .item-icon-del { display: none; position: absolute; top: -5px; right: -5px;
+            background: var(--red); color: white; border: none; border-radius: 50%;
+            width: 16px; height: 16px; font-size: 0.6rem; cursor: pointer; line-height: 16px; text-align: center; padding: 0; }
+        .item-icon-wrap:hover .item-icon-del { display: block; }
+        .inv-slot { display: grid; grid-template-columns: 80px 30% 1fr 40px; gap: 10px; background: #2d2d2d; padding: 8px; border-radius: 4px; align-items: start; border-left: 3px solid #555; transition: background 0.2s; }
 
         /* Skills */
         .skill-item { background: #383838; padding: 8px 10px; border-radius: 6px; margin-bottom: 8px; position: relative; border-left: 4px solid var(--green); display: flex; flex-direction: column; gap: 5px; }
@@ -122,6 +133,16 @@
         .ctrl-btn.del:hover { color: var(--red); }
         .add-zone { margin-top: 10px; text-align: center; border: 2px dashed #444; border-radius: 6px; padding: 8px; cursor: pointer; transition: 0.2s; color: #888; font-size: 0.9rem; }
         .add-zone:hover { border-color: var(--gold); color: var(--gold); background: rgba(255,255,255,0.02); }
+
+        /* Race/Class link buttons */
+        .class-link-row { display: flex; align-items: center; gap: 6px; }
+        .class-link-row input[type="text"] { flex: 1; }
+        .class-link-btn { display: inline-flex; align-items: center; gap: 3px; background: #2c3e2c; border: 1px solid #27ae60; color: #2ecc71; border-radius: 4px; font-size: 0.72rem; padding: 5px 7px; font-weight: bold; text-decoration: none; white-space: nowrap; transition: 0.2s; flex-shrink: 0; }
+        .class-link-btn:hover { background: #27ae60; color: white; }
+        .class-link-btn.empty { opacity: 0.35; pointer-events: none; }
+        .class-link-edit-btn { background: transparent; border: 1px solid #555; color: #aaa; border-radius: 4px; cursor: pointer; font-size: 0.75rem; padding: 4px 6px; transition: 0.2s; flex-shrink: 0; }
+        .class-link-edit-btn:hover { border-color: var(--gold); color: var(--gold); }
+        .class-link-input { display: none; font-size: 0.78rem; padding: 4px 6px; background: #111; border: 1px solid var(--gold); color: white; border-radius: 4px; width: 180px; flex-shrink: 0; }
 
         label { display: block; font-size: 0.75rem; color: var(--gold); text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
         input[type="text"], input[type="number"] { width: 100%; padding: 8px; background: var(--dark-input); border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
@@ -247,7 +268,8 @@
             /* Inventory */
             .currency-grid { grid-template-columns: repeat(3, 1fr); }
             .currency-item:last-child { grid-column: span 3; }
-            .inv-slot { grid-template-columns: 1fr; position: relative; padding-bottom: 42px; }
+            .inv-slot { grid-template-columns: 52px 1fr; position: relative; padding-bottom: 42px; }
+            .inv-slot input.item-name, .inv-slot textarea.item-desc { grid-column: 2; }
             .item-controls { position: absolute; bottom: 6px; right: 6px; display: flex; gap: 8px; }
 
             /* NPC cards */
@@ -302,7 +324,15 @@
                     </div>
                     <div>
                         <label>Раса и Класс</label>
-                        <input type="text" id="charClass" placeholder="Класс...">
+                        <div class="class-link-row">
+                            <input type="text" id="charClass" placeholder="Класс...">
+                            <a id="raceLink" class="class-link-btn empty" href="#" target="_blank" rel="noopener" title="Раса">🧝 Раса</a>
+                            <button class="class-link-edit-btn" onclick="toggleClassLink('race')" title="Ссылка на расу">✏️</button>
+                            <a id="classLink" class="class-link-btn empty" href="#" target="_blank" rel="noopener" title="Класс">⚔️ Класс</a>
+                            <button class="class-link-edit-btn" onclick="toggleClassLink('class')" title="Ссылка на класс">✏️</button>
+                        </div>
+                        <input type="url" id="raceLinkInput" class="class-link-input" placeholder="https://... (ссылка на расу)" onblur="saveClassLink('race')" onkeydown="if(event.key==='Enter')this.blur()">
+                        <input type="url" id="classLinkInput" class="class-link-input" placeholder="https://... (ссылка на класс)" onblur="saveClassLink('class')" onkeydown="if(event.key==='Enter')this.blur()">
                     </div>
                 </div>
                 <div class="level-badge">
@@ -708,10 +738,18 @@
     }
 
     // --- DOM GENERATORS ---
-    function addItem(name = '', desc = '') {
+    function addItem(name = '', desc = '', img = '') {
         const div = document.createElement('div');
         div.className = 'inv-slot';
         div.innerHTML = `
+            <div class="item-icon-wrap">
+                <img class="item-icon" src="${img || ''}" 
+                    style="${img ? '' : 'opacity:0.3;'}"
+                    title="Нажми чтобы добавить иконку"
+                    onerror="this.src='';this.style.opacity='0.3';"
+                    onclick="triggerItemImg(this)">
+                <button class="item-icon-del" onclick="clearItemImg(this)" title="Удалить картинку">✖</button>
+            </div>
             <input type="text" class="item-name" placeholder="Название" value="${name}">
             <textarea class="item-desc" placeholder="Описание...">${desc}</textarea>
             <div class="item-controls">
@@ -720,6 +758,39 @@
                 <button class="ctrl-btn" onclick="moveDown(this)">▼</button>
             </div>`;
         document.getElementById('inventoryList').appendChild(div);
+    }
+
+    // Item image helpers
+    function triggerItemImg(imgEl) {
+        const inp = document.createElement('input');
+        inp.type = 'file'; inp.accept = 'image/*';
+        inp.onchange = () => {
+            if (!inp.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                const tmp = new Image();
+                tmp.onload = () => {
+                    const MAX = 80;
+                    const scale = Math.min(MAX / tmp.width, MAX / tmp.height, 1);
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.round(tmp.width * scale);
+                    canvas.height = Math.round(tmp.height * scale);
+                    canvas.getContext('2d').drawImage(tmp, 0, 0, canvas.width, canvas.height);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.4);
+                    imgEl.src = dataUrl;
+                    imgEl.style.opacity = '1';
+                    saveCharacter();
+                };
+                tmp.src = e.target.result;
+            };
+            reader.readAsDataURL(inp.files[0]);
+        };
+        inp.click();
+    }
+    function clearItemImg(btn) {
+        const img = btn.closest('.item-icon-wrap').querySelector('.item-icon');
+        img.src = ''; img.style.opacity = '0.3';
+        saveCharacter();
     }
     function addSkill(name = '', desc = '', cost = '', link = '') {
         const div = document.createElement('div');
@@ -780,6 +851,25 @@
         }
     }
 
+    // --- CLASS/RACE LINKS ---
+    function toggleClassLink(type) {
+        const inp = document.getElementById(type + 'LinkInput');
+        const isOpen = inp.style.display === 'block';
+        // close both first
+        document.getElementById('raceLinkInput').style.display = 'none';
+        document.getElementById('classLinkInput').style.display = 'none';
+        if (!isOpen) { inp.style.display = 'block'; inp.focus(); inp.select(); }
+    }
+    function saveClassLink(type) {
+        const inp = document.getElementById(type + 'LinkInput');
+        const btn = document.getElementById(type + 'Link');
+        const url = inp.value.trim();
+        inp.style.display = 'none';
+        if (url) { btn.href = url; btn.dataset.url = url; btn.classList.remove('empty'); }
+        else { btn.href = '#'; btn.dataset.url = ''; btn.classList.add('empty'); }
+        saveCharacter();
+    }
+
     // --- SPELL LINK ---
     function editSpellLink(btn) {
         const box = btn.closest('.skill-link-box');
@@ -816,7 +906,7 @@
     // --- DATA ---
     function gatherData() {
         const items = [];
-        document.querySelectorAll('.inv-slot').forEach(r => items.push({ name: r.querySelector('.item-name').value, desc: r.querySelector('.item-desc').value }));
+        document.querySelectorAll('.inv-slot').forEach(r => { const img = r.querySelector('.item-icon'); items.push({ name: r.querySelector('.item-name').value, desc: r.querySelector('.item-desc').value, img: (img && img.src && img.src.startsWith('data:')) ? img.src : '' }); });
         const skills = [];
         document.querySelectorAll('.skill-item').forEach(i => skills.push({ 
             name: i.querySelector('.skill-name').value, 
@@ -838,6 +928,8 @@
         return {
             name: document.getElementById('charName').value,
             class: document.getElementById('charClass').value,
+            raceLink: document.getElementById('raceLink').dataset.url || '',
+            classLink: document.getElementById('classLink').dataset.url || '',
             maxHp: document.getElementById('maxHp').value,
             currHp: document.getElementById('currHp').value,
             armorClass: document.getElementById('armorClass').value,
@@ -881,6 +973,13 @@
         }
         document.getElementById('charName').value = data.name || '';
         document.getElementById('charClass').value = data.class || '';
+        ['race','class'].forEach(type => {
+            const url = data[type + 'Link'] || '';
+            const btn = document.getElementById(type + 'Link');
+            const inp = document.getElementById(type + 'LinkInput');
+            if (url) { btn.href = url; btn.dataset.url = url; btn.classList.remove('empty'); inp.value = url; }
+            else { btn.href = '#'; btn.dataset.url = ''; btn.classList.add('empty'); inp.value = ''; }
+        });
         document.getElementById('maxHp').value = data.maxHp || 10;
         document.getElementById('currHp').value = data.currHp || 10;
         document.getElementById('armorClass').value = data.armorClass || 10;
@@ -913,14 +1012,17 @@
                 }
             });
         }
+        avatarBase64 = data.avatar || '';
         if (data.avatar) {
-            avatarBase64 = data.avatar;
             document.getElementById('avatarDisplay').style.backgroundImage = `url(${data.avatar})`;
             document.getElementById('uploadHint').style.display = 'none';
+        } else {
+            document.getElementById('avatarDisplay').style.backgroundImage = '';
+            document.getElementById('uploadHint').style.display = '';
         }
 
         document.getElementById('inventoryList').innerHTML = '';
-        if (data.items) data.items.forEach(item => addItem(item.name, item.desc));
+        if (data.items) data.items.forEach(item => addItem(item.name, item.desc, item.img || ''));
         document.getElementById('skillsList').innerHTML = '';
         if (data.skills) data.skills.forEach(s => addSkill(s.name, s.desc, s.cost, s.link || ''));
         document.getElementById('bonusList').innerHTML = '';
