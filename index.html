@@ -311,7 +311,7 @@
                     <div class="xp-display">XP: <span id="totalXpDisplay">0</span></div>
                     <div class="xp-control">
                         <input type="number" id="xpInput" placeholder="+XP">
-                        <button onclick="addXp()" title="Добавить опыт">+</button>
+                        <button onclick="addXp()" title="Добавить опыт">+XP</button>
                         <button onclick="addLevel()" title="Добавить уровень" style="background:#3d2b6e;border:1px solid var(--purple);color:var(--gold);border-radius:4px;cursor:pointer;font-weight:bold;font-size:0.8rem;padding:0 6px;">+LVL</button>
                     </div>
                 </div>
@@ -437,7 +437,14 @@
 
     <div class="controls">
         <button class="btn btn-save" onclick="saveCharacter()">💾 Save</button>
-        <button class="btn btn-cloud" onclick="toggleCloudModal()">☁️ Sync</button>
+        <div class="btn-dropdown" id="syncBtnWrap">
+            <button class="btn btn-cloud" onclick="toggleSyncMenu()">☁️ Sync ▴</button>
+            <div class="dropdown-menu" id="syncMenu">
+                <button onclick="uploadToCloud(); closeSyncMenu()">⬆️ Upload to Cloud</button>
+                <button onclick="loadFromCloud(); closeSyncMenu()">⬇️ Load from Cloud</button>
+                <button onclick="toggleCloudModal(); closeSyncMenu()" style="color:#888;font-size:0.8rem;">⚙️ Настройки Gist</button>
+            </div>
+        </div>
         <div class="btn-dropdown" id="ioBtnWrap">
             <button class="btn btn-io" onclick="toggleIoMenu()">⬆⬇ IO ▴</button>
             <div class="dropdown-menu" id="ioMenu">
@@ -453,15 +460,14 @@
 
 <div id="cloudModal" class="modal">
     <div class="modal-content">
-        <h2>GitHub Sync</h2>
-        <p>Нужен Gist ID и Token (с правами 'gist'). Данные сохранятся в браузере.</p>
-        <input type="password" id="ghToken" placeholder="GitHub Token (ghp_...)" onchange="saveCloudConfig()">
-        <input type="text" id="gistId" placeholder="Gist ID (длинный код из URL)" onchange="saveCloudConfig()">
-        <div class="modal-btns">
-            <button class="btn btn-io" onclick="loadFromCloud()">☁️ Load From Cloud</button>
-            <button class="btn btn-save" onclick="uploadToCloud()">☁️ Upload To Cloud</button>
+        <h2>⚙️ Настройки Gist</h2>
+        <p>Нужен Gist ID и Token (с правами 'gist').</p>
+        <input type="password" id="ghToken" placeholder="GitHub Token (ghp_...)">
+        <input type="text" id="gistId" placeholder="Gist ID (длинный код из URL)">
+        <div class="modal-btns" style="margin-top:12px;">
+            <button class="btn btn-save" onclick="saveCloudConfig(); toggleCloudModal()">💾 Сохранить данные Gist</button>
         </div>
-        <button class="btn btn-clear" style="margin-top:10px" onclick="toggleCloudModal()">Закрыть</button>
+        <button class="btn" style="margin-top:8px;background:#333;color:#aaa;" onclick="toggleCloudModal()">Закрыть</button>
     </div>
 </div>
 
@@ -966,6 +972,7 @@
         const gistId = localStorage.getItem('gh_gist');
         if(!token || !gistId) { alert("Сначала укажите Token и Gist ID!"); return; }
 
+        saveCharacter();
         const data = gatherData();
         const btn = document.querySelector('.btn-save'); 
 
@@ -987,7 +994,6 @@
 
             if(res.ok) {
                 alert("Успешно загружено в облако! ☁️");
-                toggleCloudModal();
             } else {
                 alert("Ошибка загрузки! Проверьте токен и ID.");
                 console.error(await res.json());
@@ -1014,7 +1020,6 @@
                     loadCharacter(charData);
                     saveCharacter(); 
                     alert("Персонаж загружен из облака! ☁️");
-                    toggleCloudModal();
                 } else {
                     alert("В этом Gist нет файла hero.json!");
                 }
@@ -1070,6 +1075,15 @@
         });
     });
 
+    // --- SYNC DROPDOWN ---
+    function toggleSyncMenu() {
+        document.getElementById('ioBtnWrap').classList.remove('open');
+        document.getElementById('syncBtnWrap').classList.toggle('open');
+    }
+    function closeSyncMenu() {
+        document.getElementById('syncBtnWrap').classList.remove('open');
+    }
+
     // --- IO DROPDOWN ---
     function toggleIoMenu() {
         const wrap = document.getElementById('ioBtnWrap');
@@ -1080,6 +1094,7 @@
     }
     document.addEventListener('click', e => {
         if (!document.getElementById('ioBtnWrap').contains(e.target)) closeIoMenu();
+        if (!document.getElementById('syncBtnWrap').contains(e.target)) closeSyncMenu();
     });
 
     // --- CUSTOM CSS ---
