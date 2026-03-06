@@ -101,10 +101,17 @@
 
         /* Item icon */
         .item-icon-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
-        .item-icon { width: 80px; height: 80px; border-radius: 6px; border: 2px dashed #555;
-            background: #1a1a1a; object-fit: cover; cursor: pointer; display: block;
-            transition: border-color 0.2s; }
+        .item-icon { width: 80px; height: 80px; border-radius: 8px; border: 2px solid transparent;
+            object-fit: cover; cursor: pointer; display: block; transition: border-color 0.2s; }
         .item-icon:hover { border-color: var(--gold); }
+        .item-placeholder { width: 80px; height: 80px; border-radius: 8px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; font-weight: 900; color: rgba(255,255,255,0.85);
+            text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+            border: 1px solid rgba(255,255,255,0.07);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -2px 8px rgba(0,0,0,0.4);
+            transition: filter 0.2s, border-color 0.2s; user-select: none; }
+        .item-placeholder:hover { filter: brightness(1.2); border-color: var(--gold); }
         .item-icon-del { display: none; position: absolute; top: -5px; right: -5px;
             background: var(--red); color: white; border: none; border-radius: 50%;
             width: 16px; height: 16px; font-size: 0.6rem; cursor: pointer; line-height: 16px; text-align: center; padding: 0; }
@@ -738,19 +745,44 @@
     }
 
     // --- DOM GENERATORS ---
+    function _itemGradient(name) {
+        let h1 = 0, h2 = 0;
+        for (let i = 0; i < name.length; i++) {
+            h1 = (h1 * 31 + name.charCodeAt(i)) & 0xffff;
+            h2 = (h2 * 17 + name.charCodeAt(i)) & 0xffff;
+        }
+        const hue1 = h1 % 360;
+        const hue2 = (hue1 + 40 + h2 % 60) % 360;
+        return `linear-gradient(135deg, hsl(${hue1},0%,30%) 0%, hsl(${hue2},0%,20%) 100%)`;
+    }
+    function renderItemIcon(wrap, name, img) {
+        const del = wrap.querySelector('.item-icon-del');
+        wrap.querySelectorAll('.item-icon, .item-placeholder').forEach(el => el.remove());
+        if (img) {
+            const i = document.createElement('img');
+            i.className = 'item-icon'; i.src = img;
+            i.title = 'Нажми чтобы сменить';
+            i.onclick = function() { triggerItemImg(this); };
+            i.onerror = function() { renderItemIcon(wrap, wrap.closest('.inv-slot').querySelector('.item-name').value, ''); };
+            wrap.insertBefore(i, del);
+        } else {
+            const p = document.createElement('div');
+            p.className = 'item-placeholder';
+            p.title = 'Нажми чтобы добавить картинку';
+            p.style.background = _itemGradient(name || '');
+            p.textContent = (name || '?').trim()[0].toUpperCase();
+            p.onclick = function() { triggerItemImg(this); };
+            wrap.insertBefore(p, del);
+        }
+    }
     function addItem(name = '', desc = '', img = '') {
         const div = document.createElement('div');
         div.className = 'inv-slot';
         div.innerHTML = `
             <div class="item-icon-wrap">
-                <img class="item-icon" src="${img || ''}" 
-                    style="${img ? '' : 'opacity:0.3;'}"
-                    title="Нажми чтобы добавить иконку"
-                    onerror="this.src='';this.style.opacity='0.3';"
-                    onclick="triggerItemImg(this)">
                 <button class="item-icon-del" onclick="clearItemImg(this)" title="Удалить картинку">✖</button>
             </div>
-            <input type="text" class="item-name" placeholder="Название" value="${name}">
+            <input type="text" class="item-name" placeholder="Название" value="${name}" oninput="updateItemPlaceholder(this)">
             <textarea class="item-desc" placeholder="Описание...">${desc}</textarea>
             <div class="item-controls">
                 <button class="ctrl-btn" onclick="moveUp(this)">▲</button>
@@ -758,10 +790,17 @@
                 <button class="ctrl-btn" onclick="moveDown(this)">▼</button>
             </div>`;
         document.getElementById('inventoryList').appendChild(div);
+        renderItemIcon(div.querySelector('.item-icon-wrap'), name, img);
+    }
+    function updateItemPlaceholder(input) {
+        const wrap = input.closest('.inv-slot').querySelector('.item-icon-wrap');
+        const ph = wrap.querySelector('.item-placeholder');
+        if (ph) { ph.textContent = (input.value || '?').trim()[0].toUpperCase(); ph.style.background = _itemGradient(input.value); }
     }
 
     // Item image helpers
-    function triggerItemImg(imgEl) {
+    function triggerItemImg(el) {
+        const wrap = el.closest('.item-icon-wrap');
         const inp = document.createElement('input');
         inp.type = 'file'; inp.accept = 'image/*';
         inp.onchange = () => {
@@ -776,9 +815,9 @@
                     canvas.width = Math.round(tmp.width * scale);
                     canvas.height = Math.round(tmp.height * scale);
                     canvas.getContext('2d').drawImage(tmp, 0, 0, canvas.width, canvas.height);
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.4);
-                    imgEl.src = dataUrl;
-                    imgEl.style.opacity = '1';
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                    const name = wrap.closest('.inv-slot').querySelector('.item-name').value;
+                    renderItemIcon(wrap, name, dataUrl);
                     saveCharacter();
                 };
                 tmp.src = e.target.result;
@@ -788,8 +827,9 @@
         inp.click();
     }
     function clearItemImg(btn) {
-        const img = btn.closest('.item-icon-wrap').querySelector('.item-icon');
-        img.src = ''; img.style.opacity = '0.3';
+        const wrap = btn.closest('.item-icon-wrap');
+        const name = wrap.closest('.inv-slot').querySelector('.item-name').value;
+        renderItemIcon(wrap, name, '');
         saveCharacter();
     }
     function addSkill(name = '', desc = '', cost = '', link = '') {
