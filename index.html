@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐉</text></svg>">
-    <title>D&D Hero Sheet v20 (Mobile version upd)</title>
+    <title>D&D Hero Sheet v21 (СSS, lang's and ability's)</title>
     <style>
         /* === 1. БАЗОВЫЕ СТИЛИ (ПК) === */
         :root { --gold: #d4af37; --bg: #1a1a1a; --card: #2d2d2d; --text: #e0e0e0; --red: #c0392b; --green: #27ae60; --blue: #2980b9; --purple: #9b59b6; --dark-input: #111; --tab-inactive: #333; }
@@ -53,6 +53,18 @@
         .stat-card input.stat-temp { width: 35%; background: #222; border: 1px solid var(--blue); color: var(--blue); text-align: center; font-size: 0.9rem; font-weight: bold; border-radius: 4px; padding: 2px; }
         .stat-mod { display: block; font-size: 1.2rem; color: var(--gold); font-weight: bold; background: #222; border-radius: 4px; margin: 5px auto 0; width: 80%; }
 
+        /* Stat skills list */
+        .stat-skills { margin-top: 6px; text-align: left; }
+        .stat-skill { font-size: 0.8rem; color: #aaa; padding: 1px 0; display: flex; align-items: center; gap: 3px; cursor: default; white-space: nowrap; }
+        .stat-skill.proficient { color: var(--gold); }
+        .stat-skill.proficient::before { content: '●'; font-size: 0.55rem; color: var(--gold); }
+        .stat-skill:not(.proficient)::before { content: '○'; font-size: 0.8rem; color: #555; }
+
+        /* Languages */
+        .languages-box { background: #222; border: 1px solid #444; border-radius: 8px; padding: 12px 15px; margin-top: 15px; }
+        .languages-box label { margin-bottom: 6px; }
+        .languages-box textarea { width: 100%; background: #333; border: 1px solid #555; color: #e0e0e0; border-radius: 4px; padding: 6px 8px; font-family: inherit; font-size: 0.9rem; resize: vertical; min-height: 48px; box-sizing: border-box; }
+
         /* Lists */
         .bonuses-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
         .bonus-item { display: flex; gap: 5px; background: #333; padding: 5px; border-radius: 4px; align-items: center; border-left: 3px solid var(--blue); }
@@ -61,7 +73,7 @@
         .traits-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
         .trait-card { background: #2d2d2d; border: 1px solid #444; border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 5px; position: relative; }
         .trait-card input { font-weight: bold; color: var(--gold); text-align: center; border: none; background: #222; }
-        .trait-card textarea { resize: none; height: 60px; font-size: 0.85rem; border: none; background: #222; color: #ccc; width: 100%; box-sizing: border-box; font-family: inherit; }
+        .trait-card textarea { resize: vertical; min-height: 60px; font-size: 0.85rem; border: none; background: #222; color: #ccc; width: 100%; box-sizing: border-box; font-family: inherit; }
         .trait-del { position: absolute; top: 0; right: 0; background: var(--red); color: white; border: none; font-size: 0.7rem; cursor: pointer; opacity: 0; width: 20px; height: 20px; border-radius: 0 4px 0 4px; }
         .trait-card:hover .trait-del { opacity: 1; }
 
@@ -118,9 +130,27 @@
         .npc-desc { background: #222; border: none; color: #ccc; font-family: inherit; font-size: 0.9rem; padding: 6px; border-radius: 4px; resize: vertical; min-height: 70px; width: 100%; box-sizing: border-box; }
         .npc-del { position: absolute; top: 6px; right: 6px; background: var(--red); color: white; border: none; font-size: 0.75rem; cursor: pointer; opacity: 0; width: 22px; height: 22px; border-radius: 4px; }
         .npc-card:hover .npc-del { opacity: 1; }
-        .notes-area { width: 100%; height: 100%; min-height: 400px; background: #222; border: 1px solid #444; color: #ddd; padding: 15px; border-radius: 8px; font-family: inherit; resize: none; box-sizing: border-box; }
+        .notes-area { width: 100%; height: 100%; min-height: 200px; background: #222; border: 1px solid #444; color: #ddd; padding: 15px; border-radius: 8px; font-family: inherit; resize: vertical; box-sizing: border-box; }
 
-        .controls { display: flex; gap: 10px; margin-top: auto; border-top: 1px solid #444; padding-top: 20px; flex-wrap: wrap; }
+        .controls { display: flex; gap: 10px; margin-top: auto; border-top: 1px solid #444; padding-top: 20px; flex-wrap: wrap; justify-content: center; }
+        /* Dropdown btn */
+        .btn-dropdown { position: relative; flex: 1; min-width: 120px; }
+        .btn-dropdown > .btn { width: 100%; }
+        .dropdown-menu { display: none; position: absolute; bottom: calc(100% + 6px); left: 0; right: 0;
+            background: #222; border: 1px solid #555; border-radius: 6px; overflow: hidden;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.5); z-index: 200; }
+        .dropdown-menu button { display: block; width: 100%; padding: 10px 14px; background: none;
+            border: none; color: var(--text); text-align: left; cursor: pointer; font-size: 0.9rem;
+            font-weight: bold; transition: background 0.15s; }
+        .dropdown-menu button:hover { background: #333; color: var(--gold); }
+        .dropdown-menu button + button { border-top: 1px solid #333; }
+        .btn-dropdown.open .dropdown-menu { display: block; }
+        /* Custom CSS modal */
+        .modal-wide { max-width: 620px; }
+        #customCssInput { width: 100%; min-height: 220px; background: #111; border: 1px solid #555;
+            color: #7ec8e3; border-radius: 6px; padding: 12px; font-family: 'Courier New', monospace;
+            font-size: 0.85rem; resize: vertical; box-sizing: border-box; line-height: 1.5; }
+        #customCssInput::placeholder { color: #555; }
         .btn { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; min-width: 120px; }
         .btn-save { background: var(--gold); color: black; }
         .btn-io { background: var(--blue); color: white; }
@@ -188,7 +218,7 @@
             /* Stats — 3x2 сетка */
             .stats-bar { grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 15px; }
             .stat-card { padding: 8px 4px; }
-            .stat-card label { font-size: 0.65rem; margin-bottom: 3px; }
+            .stat-card label { font-size: 1.65rem; margin-bottom: 3px; }
             .stat-row { flex-direction: row; gap: 3px; justify-content: center; }
             .stat-card input.stat-val { font-size: 1.4rem; width: 55%; }
             .stat-card input.stat-temp { width: 38%; font-size: 0.8rem; }
@@ -312,12 +342,47 @@
         </div>
 
         <div class="stats-bar">
-            <div class="stat-card"><label>СИЛ</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span></div>
-            <div class="stat-card"><label>ЛОВ</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span></div>
-            <div class="stat-card"><label>ТЕЛ</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span></div>
-            <div class="stat-card"><label>ИНТ</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span></div>
-            <div class="stat-card"><label>МУД</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span></div>
-            <div class="stat-card"><label>ХАР</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span></div>
+            <div class="stat-card" data-stat="0"><label>СИЛ</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span>
+                <div class="stat-skills">
+                    <div class="stat-skill" data-skill="Атлетика">Атлетика</div>
+                </div></div>
+            <div class="stat-card" data-stat="1"><label>ЛОВ</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span>
+                <div class="stat-skills">
+                    <div class="stat-skill" data-skill="Акробатика">Акробатика</div>
+                    <div class="stat-skill" data-skill="Ловкость рук">Ловкость рук</div>
+                    <div class="stat-skill" data-skill="Скрытность">Скрытность</div>
+                </div></div>
+            <div class="stat-card" data-stat="2"><label>ТЕЛ</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span>
+                <div class="stat-skills">
+                    <div class="stat-skill" style="color:#666;font-style:italic;font-size:0.8rem;">— навыков нет —</div>
+                </div></div>
+            <div class="stat-card" data-stat="3"><label>ИНТ</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span>
+                <div class="stat-skills">
+                    <div class="stat-skill" data-skill="Анализ">Анализ</div>
+                    <div class="stat-skill" data-skill="История">История</div>
+                    <div class="stat-skill" data-skill="Магия">Магия</div>
+                    <div class="stat-skill" data-skill="Природа">Природа</div>
+                    <div class="stat-skill" data-skill="Религия">Религия</div>
+                </div></div>
+            <div class="stat-card" data-stat="4"><label>МУД</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span>
+                <div class="stat-skills">
+                    <div class="stat-skill" data-skill="Внимательность">Внимательность</div>
+                    <div class="stat-skill" data-skill="Выживание">Выживание</div>
+                    <div class="stat-skill" data-skill="Медицина">Медицина</div>
+                    <div class="stat-skill" data-skill="Проницательность">Проницательность</div>
+                    <div class="stat-skill" data-skill="Уход за животными">Уход за жив.</div>
+                </div></div>
+            <div class="stat-card" data-stat="5"><label>ХАР</label><div class="stat-row"><input type="number" class="stat-val" value="10" oninput="calcMod(this)"><input type="number" class="stat-temp" placeholder="мод" oninput="calcMod(this)"></div><span class="stat-mod">+0</span>
+                <div class="stat-skills">
+                    <div class="stat-skill" data-skill="Выступление">Выступление</div>
+                    <div class="stat-skill" data-skill="Запугивание">Запугивание</div>
+                    <div class="stat-skill" data-skill="Обман">Обман</div>
+                    <div class="stat-skill" data-skill="Убеждение">Убеждение</div>
+                </div></div>
+        </div>
+        <div class="languages-box">
+            <label>🗣️ Языки</label>
+            <textarea id="charLanguages" placeholder="Общий, Эльфийский, Дварфийский..."></textarea>
         </div>
     </div>
 
@@ -364,18 +429,24 @@
     </div>
 
     <div id="notes" class="tab-pane">
-        <textarea id="charNotes" class="notes-area" placeholder="Важные записи..." style="min-height:200px;"></textarea>
+        <textarea id="charNotes" class="notes-area" placeholder="Важные записи..." style="min-height:400px;"></textarea>
         <h3 style="margin-top:20px;">🧑‍🤝‍🧑 Известные персонажи</h3>
         <div id="npcList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px;"></div>
         <div class="add-zone" onclick="addNpc()">+ Добавить персонажа</div>
     </div>
 
     <div class="controls">
-        <button class="btn btn-save" onclick="saveCharacter()">💾 Save to browser</button>
+        <button class="btn btn-save" onclick="saveCharacter()">💾 Save</button>
         <button class="btn btn-cloud" onclick="toggleCloudModal()">☁️ Sync</button>
-        <button class="btn btn-io" onclick="exportToFile()">⬇️ Export</button>
-        <button class="btn btn-io" onclick="document.getElementById('importFile').click()">⬆️ Import</button>
+        <div class="btn-dropdown" id="ioBtnWrap">
+            <button class="btn btn-io" onclick="toggleIoMenu()">⬆⬇ IO ▴</button>
+            <div class="dropdown-menu" id="ioMenu">
+                <button onclick="exportToFile(); closeIoMenu()">⬇️ Export JSON</button>
+                <button onclick="document.getElementById('importFile').click(); closeIoMenu()">⬆️ Import JSON</button>
+            </div>
+        </div>
         <input type="file" id="importFile" style="display:none" onchange="importFromFile(this)">
+        <button class="btn btn-io" onclick="toggleCssModal()" style="background:#2c6e6e;">🎨 CSS</button>
         <button class="btn btn-clear" onclick="clearCharacter()">🗑️ Clear</button>
     </div>
 </div>
@@ -391,6 +462,46 @@
             <button class="btn btn-save" onclick="uploadToCloud()">☁️ Upload To Cloud</button>
         </div>
         <button class="btn btn-clear" style="margin-top:10px" onclick="toggleCloudModal()">Закрыть</button>
+    </div>
+</div>
+
+<div id="cssModal" class="modal">
+    <div class="modal-content modal-wide">
+        <h2 style="color:var(--blue);">🎨 Кастомизация</h2>
+
+        <div style="margin-bottom:14px;">
+            <label style="color:#74b9ff;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">🖼️ Фоновое изображение (URL)</label>
+            <div style="display:flex;gap:6px;align-items:center;">
+                <input type="url" id="bgUrlInput" placeholder="https://i.imgur.com/example.jpg"
+                    style="flex:1;background:#111;border:1px solid #555;color:white;border-radius:4px;padding:7px 10px;font-size:0.85rem;">
+                <button onclick="applyBgUrl()" style="background:#1a5a8a;border:none;color:white;border-radius:4px;padding:7px 12px;cursor:pointer;font-weight:bold;white-space:nowrap;">✅ OK</button>
+                <button onclick="clearBgUrl()" style="background:#5a1a1a;border:none;color:#ffaaaa;border-radius:4px;padding:7px 10px;cursor:pointer;font-weight:bold;">✖</button>
+            </div>
+            <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span style="font-size:0.72rem;color:#888;min-width:72px;">Затемнение:</span>
+                <input type="range" id="bgDimSlider" min="0" max="90" value="50" oninput="updateBgDim(this.value)"
+                    style="flex:1;min-width:80px;accent-color:#2980b9;">
+                <span id="bgDimVal" style="font-size:0.75rem;color:#aaa;min-width:30px;">50%</span>
+            </div>
+            <div style="margin-top:5px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span style="font-size:0.72rem;color:#888;min-width:72px;">Лист:</span>
+                <input type="range" id="bgOpacitySlider" min="20" max="100" value="88" oninput="updateBgOpacity(this.value)"
+                    style="flex:1;min-width:80px;accent-color:#9b59b6;">
+                <span id="bgOpacityVal" style="font-size:0.75rem;color:#aaa;min-width:30px;">88%</span>
+            </div>
+        </div>
+
+        <div style="border-top:1px solid #444;padding-top:14px;">
+            <label style="color:#74b9ff;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">🎨 Custom CSS</label>
+            <p style="color:#888;font-size:0.78rem;margin:0 0 8px;">Применится поверх стандартных стилей.</p>
+            <textarea id="customCssInput" placeholder="/* например */&#10;body { background: #0a0a0a; }&#10;.stat-card { border-color: #c0392b; }"></textarea>
+            <div class="modal-btns" style="margin-top:10px;">
+                <button class="btn btn-io" onclick="applyCustomCss()">✅ Применить CSS</button>
+                <button class="btn btn-clear" onclick="clearCustomCss()">🗑️ Сбросить CSS</button>
+            </div>
+        </div>
+
+        <button class="btn" style="margin-top:10px;background:#333;color:#aaa;" onclick="toggleCssModal()">Закрыть</button>
     </div>
 </div>
 
@@ -734,6 +845,8 @@
             },
             stats, statsTemp, items, skills, bonuses, traits, spells: spellData, 
             notes: document.getElementById('charNotes').value, avatar: avatarBase64,
+            languages: document.getElementById('charLanguages').value,
+            skillProfs: Array.from(document.querySelectorAll('.stat-skill.proficient')).map(el => el.dataset.skill),
             npcs: Array.from(document.querySelectorAll('.npc-card')).map(c => ({ name: c.querySelector('.npc-name').value, desc: c.querySelector('.npc-desc').value })),
             spellDC: document.getElementById('spellDC').value,
             dcStat: document.getElementById('dcStat').value
@@ -762,6 +875,11 @@
         document.getElementById('speed').value = data.speed || 30;
         document.getElementById('profBonus').value = data.profBonus || 2;
         document.getElementById('charNotes').value = data.notes || '';
+        if (document.getElementById('charLanguages')) document.getElementById('charLanguages').value = data.languages || '';
+        document.querySelectorAll('.stat-skill').forEach(el => el.classList.remove('proficient'));
+        if (data.skillProfs) data.skillProfs.forEach(name => {
+            document.querySelectorAll('.stat-skill').forEach(el => { if(el.dataset.skill === name) el.classList.add('proficient'); });
+        });
         if (data.spellDC !== undefined) document.getElementById('spellDC').value = data.spellDC;
         if (data.dcStat !== undefined) document.getElementById('dcStat').value = data.dcStat;
         globalXp = data.totalXp || 0;
@@ -928,7 +1046,136 @@
         }
     }
 
-    window.onload = () => loadCharacter();
+    // Клик по навыку = переключить владение
+    document.querySelectorAll('.stat-skill[data-skill]').forEach(el => {
+        el.title = 'Нажми чтобы отметить владение';
+        el.addEventListener('click', () => {
+            el.classList.toggle('proficient');
+            saveCharacter();
+        });
+    });
+
+    // --- IO DROPDOWN ---
+    function toggleIoMenu() {
+        const wrap = document.getElementById('ioBtnWrap');
+        wrap.classList.toggle('open');
+    }
+    function closeIoMenu() {
+        document.getElementById('ioBtnWrap').classList.remove('open');
+    }
+    document.addEventListener('click', e => {
+        if (!document.getElementById('ioBtnWrap').contains(e.target)) closeIoMenu();
+    });
+
+    // --- CUSTOM CSS ---
+    function toggleCssModal() {
+        const m = document.getElementById('cssModal');
+        m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+        document.getElementById('customCssInput').value = localStorage.getItem('custom_css') || '';
+        document.getElementById('bgUrlInput').value = localStorage.getItem('bg_url') || '';
+        const dim = localStorage.getItem('bg_dim') ?? '50';
+        document.getElementById('bgDimSlider').value = dim;
+        document.getElementById('bgDimVal').textContent = dim + '%';
+        const opacity = localStorage.getItem('bg_opacity') ?? '88';
+        document.getElementById('bgOpacitySlider').value = opacity;
+        document.getElementById('bgOpacityVal').textContent = opacity + '%';
+    }
+    function applyCustomCss() {
+        const css = document.getElementById('customCssInput').value.trim();
+        localStorage.setItem('custom_css', css);
+        let tag = document.getElementById('customCssTag');
+        if (!tag) { tag = document.createElement('style'); tag.id = 'customCssTag'; document.head.appendChild(tag); }
+        tag.textContent = css;
+        toggleCssModal();
+    }
+    function clearCustomCss() {
+        localStorage.removeItem('custom_css');
+        document.getElementById('customCssInput').value = '';
+        const tag = document.getElementById('customCssTag');
+        if (tag) tag.textContent = '';
+    }
+    function loadCustomCss() {
+        const css = localStorage.getItem('custom_css');
+        if (css) {
+            let tag = document.getElementById('customCssTag');
+            if (!tag) { tag = document.createElement('style'); tag.id = 'customCssTag'; document.head.appendChild(tag); }
+            tag.textContent = css;
+        }
+    }
+
+    // --- BACKGROUND IMAGE ---
+    function applyBgUrl() {
+        const url = document.getElementById('bgUrlInput').value.trim();
+        const dim = document.getElementById('bgDimSlider').value;
+        const opacity = document.getElementById('bgOpacitySlider').value;
+        if (!url) { clearBgUrl(); return; }
+        localStorage.setItem('bg_url', url);
+        localStorage.setItem('bg_dim', dim);
+        localStorage.setItem('bg_opacity', opacity);
+        _setBg(url, dim, opacity);
+    }
+    function clearBgUrl() {
+        localStorage.removeItem('bg_url');
+        localStorage.removeItem('bg_dim');
+        document.getElementById('bgUrlInput').value = '';
+        document.getElementById('bgDimSlider').value = 50;
+        document.getElementById('bgDimVal').textContent = '50%';
+        document.getElementById('bgOpacitySlider').value = 88;
+        document.getElementById('bgOpacityVal').textContent = '88%';
+        _setBg(null, 50);
+    }
+    function updateBgDim(val) {
+        document.getElementById('bgDimVal').textContent = val + '%';
+        const url = localStorage.getItem('bg_url');
+        const opacity = document.getElementById('bgOpacitySlider').value;
+        if (url) { localStorage.setItem('bg_dim', val); _setBg(url, val, opacity); }
+    }
+    function updateBgOpacity(val) {
+        document.getElementById('bgOpacityVal').textContent = val + '%';
+        localStorage.setItem('bg_opacity', val);
+        const url = localStorage.getItem('bg_url');
+        const dim = document.getElementById('bgDimSlider').value;
+        const alpha = (parseInt(val) / 100).toFixed(2);
+        let tag = document.getElementById('bgImgTag');
+        if (tag) tag.textContent = tag.textContent.replace(/background: rgba\(45,45,45,[0-9.]+\)/, `background: rgba(45,45,45,${alpha})`);
+        // also works without bg image — just adjust container opacity
+        if (!url) {
+            let t2 = document.getElementById('bgImgTag');
+            if (!t2) { t2 = document.createElement('style'); t2.id = 'bgImgTag'; document.head.appendChild(t2); }
+            t2.textContent = `.container { background: rgba(45,45,45,${alpha}) !important; }`;
+        }
+    }
+    function _setBg(url, dim, opacity) {
+        let tag = document.getElementById('bgImgTag');
+        if (!tag) { tag = document.createElement('style'); tag.id = 'bgImgTag'; document.head.appendChild(tag); }
+        if (!url) { tag.textContent = ''; return; }
+        const dimAlpha = (parseInt(dim) / 100).toFixed(2);
+        const containerAlpha = (parseInt(opacity ?? localStorage.getItem('bg_opacity') ?? 88) / 100).toFixed(2);
+        tag.textContent = `
+            body {
+                background-image: url("${url}") !important;
+                background-size: cover !important;
+                background-position: center !important;
+                background-attachment: fixed !important;
+                background-repeat: no-repeat !important;
+            }
+            body::after {
+                content: '';
+                position: fixed; inset: 0; z-index: 0;
+                background: rgba(0,0,0,${dimAlpha});
+                pointer-events: none;
+            }
+            .container { position: relative; z-index: 1; background: rgba(45,45,45,${containerAlpha}) !important; backdrop-filter: blur(2px); }
+        `;
+    }
+    function loadBg() {
+        const url = localStorage.getItem('bg_url');
+        const dim = localStorage.getItem('bg_dim') ?? '50';
+        const opacity = localStorage.getItem('bg_opacity') ?? '88';
+        if (url) _setBg(url, dim, opacity);
+    }
+
+    window.onload = () => { loadCharacter(); loadCustomCss(); loadBg(); };
 </script>
 </body>
 </html>
