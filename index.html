@@ -849,7 +849,13 @@
             skillProfs: Array.from(document.querySelectorAll('.stat-skill.proficient')).map(el => el.dataset.skill),
             npcs: Array.from(document.querySelectorAll('.npc-card')).map(c => ({ name: c.querySelector('.npc-name').value, desc: c.querySelector('.npc-desc').value })),
             spellDC: document.getElementById('spellDC').value,
-            dcStat: document.getElementById('dcStat').value
+            dcStat: document.getElementById('dcStat').value,
+            theme: {
+                css: localStorage.getItem('custom_css') || '',
+                bgUrl: localStorage.getItem('bg_url') || '',
+                bgDim: localStorage.getItem('bg_dim') || '50',
+                bgOpacity: localStorage.getItem('bg_opacity') || '88'
+            }
         };
     }
 
@@ -917,6 +923,15 @@
         if (data.traits) data.traits.forEach(t => addTrait(t.name, t.desc));
         document.getElementById('npcList').innerHTML = '';
         if (data.npcs) data.npcs.forEach(n => addNpc(n.name, n.desc));
+        if (data.theme) {
+            const t = data.theme;
+            if (t.css)       { localStorage.setItem('custom_css', t.css); }
+            if (t.bgUrl)     { localStorage.setItem('bg_url', t.bgUrl); }
+            if (t.bgDim)     { localStorage.setItem('bg_dim', t.bgDim); }
+            if (t.bgOpacity) { localStorage.setItem('bg_opacity', t.bgOpacity); }
+            loadCustomCss();
+            loadBg();
+        }
     }
 
     function addNpc(name = '', desc = '') {
