@@ -1302,27 +1302,36 @@
         const opacity = document.getElementById('bgOpacitySlider').value;
         if (url) { localStorage.setItem('bg_dim', val); _setBg(url, val, opacity); }
     }
+    function _applyOpacity(val) {
+        const pct = parseInt(val);
+        const cAlpha     = (0.15 + (pct - 20) / 80 * 0.82).toFixed(2);
+        const cardAlpha  = (0.30 + (pct - 20) / 80 * 0.65).toFixed(2);
+        const inputAlpha = (0.20 + (pct - 20) / 80 * 0.75).toFixed(2);
+        const blur = pct < 95 ? Math.round((100 - pct) / 10) : 0;
+        let tag = document.getElementById('containerOpacityTag');
+        if (!tag) { tag = document.createElement('style'); tag.id = 'containerOpacityTag'; document.head.appendChild(tag); }
+        tag.textContent = `
+            .container { background: rgba(45,45,45,${cAlpha}) !important; ${blur ? `backdrop-filter: blur(${blur}px);` : ''} }
+            .stat-card { background: rgba(61,61,61,${cardAlpha}) !important; }
+            .stat-mod { background: rgba(34,34,34,${cardAlpha}) !important; }
+            .vitals-grid, .spells-wrapper, .inventory-wrapper, .languages-box { background: rgba(34,34,34,${cardAlpha}) !important; }
+            .inv-slot, .trait-card, .npc-card, .spell-slot-card, .skill-item, .bonus-item { background: rgba(45,45,45,${cardAlpha}) !important; }
+            .level-badge { background: rgba(34,34,34,${cardAlpha}) !important; }
+            input[type="text"], input[type="number"], textarea, select, .notes-area, .skill-name { background: rgba(17,17,17,${inputAlpha}) !important; }
+        `;
+    }
     function updateBgOpacity(val) {
         document.getElementById('bgOpacityVal').textContent = val + '%';
         localStorage.setItem('bg_opacity', val);
+        _applyOpacity(val);
         const url = localStorage.getItem('bg_url');
-        const dim = document.getElementById('bgDimSlider').value;
-        const alpha = (parseInt(val) / 100).toFixed(2);
-        let tag = document.getElementById('bgImgTag');
-        if (tag) tag.textContent = tag.textContent.replace(/background: rgba\(45,45,45,[0-9.]+\)/, `background: rgba(45,45,45,${alpha})`);
-        // also works without bg image — just adjust container opacity
-        if (!url) {
-            let t2 = document.getElementById('bgImgTag');
-            if (!t2) { t2 = document.createElement('style'); t2.id = 'bgImgTag'; document.head.appendChild(t2); }
-            t2.textContent = `.container { background: rgba(45,45,45,${alpha}) !important; }`;
-        }
+        if (url) { const dim = document.getElementById('bgDimSlider').value; _setBg(url, dim, val); }
     }
     function _setBg(url, dim, opacity) {
         let tag = document.getElementById('bgImgTag');
         if (!tag) { tag = document.createElement('style'); tag.id = 'bgImgTag'; document.head.appendChild(tag); }
         if (!url) { tag.textContent = ''; return; }
         const dimAlpha = (parseInt(dim) / 100).toFixed(2);
-        const containerAlpha = (parseInt(opacity ?? localStorage.getItem('bg_opacity') ?? 88) / 100).toFixed(2);
         tag.textContent = `
             body {
                 background-image: url("${url}") !important;
@@ -1337,7 +1346,7 @@
                 background: rgba(0,0,0,${dimAlpha});
                 pointer-events: none;
             }
-            .container { position: relative; z-index: 1; background: rgba(45,45,45,${containerAlpha}) !important; backdrop-filter: blur(2px); }
+            .container { position: relative; z-index: 1; }
         `;
     }
     function loadBg() {
@@ -1345,8 +1354,8 @@
         const dim = localStorage.getItem('bg_dim') ?? '50';
         const opacity = localStorage.getItem('bg_opacity') ?? '88';
         if (url) _setBg(url, dim, opacity);
+        _applyOpacity(opacity);
     }
-
     window.onload = () => { loadCharacter(); loadCustomCss(); loadBg(); };
 </script>
 </body>
