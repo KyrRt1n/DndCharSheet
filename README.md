@@ -16,7 +16,120 @@
 <details>
 <summary>+- прикольные заготовки</summary>
 
-### 🌿 Лесной Следопыт
+# 🎨 Темы для D&D Hero Sheet
+
+Копируй нужный CSS в поле 🎨 CSS → Применить
+
+---
+
+## 🌑 Шадар Кай — Сумеречный Жрец
+Пепельно-серый с тёмно-фиолетовыми оттенками.
+
+```css
+:root {
+  --gold: #b8a9d4;
+  --bg: #0d0b12;
+  --card: #13111a;
+  --text: #ccc6d8;
+  --blue: #7a6e9a;
+  --purple: #9b8cbf;
+  --green: #6b7a8a;
+  --red: #8a4a5a;
+  --tab-inactive: #1a1720;
+  --dark-input: #0e0c14;
+}
+body {
+  background: #0d0b12;
+  background-image:
+    radial-gradient(ellipse at 60% 0%, rgba(80,60,120,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 20% 100%, rgba(50,40,80,0.10) 0%, transparent 50%);
+}
+.container { border-color: #2a2535; background: rgba(19,17,26,0.97) !important; box-shadow: 0 0 60px rgba(40,25,70,0.4), inset 0 0 80px rgba(0,0,0,0.2); }
+h1, h2, h3 { color: #b8a9d4; border-color: #2a2535; text-shadow: 0 0 18px rgba(140,110,200,0.2); }
+h3 { border-color: #221e2e; }
+.stat-card { background: #1a1724; border-bottom: 3px solid #5a4e7a; }
+.stat-mod { background: #110f18; color: #b8a9d4; }
+.stat-card input.stat-val { color: #ddd6ee; }
+.vitals-grid { background: #100e18; border-color: #2a2535; }
+.vital-box input { background: #1a1724; border-color: #3a3348; color: #ccc6d8; }
+.hp-box input { color: #c4788a; border-color: #8a4a5a; }
+.ac-box input { color: #8a9ec4; border-color: #4a5a8a; }
+.dc-box input[type="number"] { color: #a48acc; border-color: #6a5a9a; }
+.tabs-nav { border-color: #2a2535; }
+.tab-btn.active { color: #b8a9d4; border-color: #2a2535; }
+.tab-btn:hover { color: #b8a9d4; background: #1e1b28; }
+.level-badge { border-color: #5a4e7a; background: #110f18; }
+.lvl-val { color: #b8a9d4; }
+.skill-item { border-left-color: #5a4e7a; background: #17151f; }
+.skill-name { background: #110f18; }
+.bonus-item { border-left-color: #4a4468; background: #17151f; }
+.trait-card { background: #17151f; border-color: #2a2535; }
+.trait-card input { background: #110f18; color: #b8a9d4; }
+.trait-card textarea { background: #110f18; }
+.spells-wrapper { background: #100e18; border-color: #2a2535; }
+.spell-slot-card { background: #17151f; border-color: #2a2535; }
+.slot-inputs input { border-color: #3a3348; color: #b8a9d4; }
+.inventory-wrapper { background: #100e18; border-color: #2a2535; }
+.inv-slot { background: #17151f; border-left-color: #5a4e7a; }
+.npc-card { background: #17151f; border-color: #2a2535; border-left-color: #7a6a9a; }
+.npc-name { background: #110f18; }
+.npc-desc { background: #110f18; }
+.notes-area { background: #110f18; border-color: #2a2535; color: #ccc6d8; }
+.languages-box { background: #100e18; border-color: #2a2535; }
+.languages-box textarea { background: #1a1724; border-color: #3a3348; }
+.add-zone { border-color: #2a2535; color: #5a5070; }
+.add-zone:hover { border-color: #7a6a9a; color: #b8a9d4; }
+input[type="text"], input[type="number"] { border-color: #2a2535; background: #0e0c14; color: #ccc6d8; }
+label { color: #7a6e9a; }
+.stat-skill { color: #7a7490; }
+.stat-skill.proficient { color: #b8a9d4; }
+.stat-skill.proficient::before { color: #9a8abf; }
+.xp-control button { background: #5a4e7a; }
+.btn-save { background: #5a4e7a; color: #f0ecff; }
+.btn-cloud { background: #3d3558; color: #c4bade; }
+.btn-io { background: #2e2a42; color: #a89ec4; }
+.btn-clear { background: #5a2e3a; color: #f0c4cc; }
+.rest-btn { background: #1a1724; border-color: #3a3348; color: #8a7eaa; }
+```
+
+---
+
+## 🩸 Кровавый Варвар
+Красно-чёрный. Для берсерков и воинов хаоса.
+
+```css
+:root {
+  --gold: #ff4444;
+  --bg: #0a0000;
+  --card: #1a0505;
+  --text: #ffcccc;
+  --blue: #cc2222;
+  --purple: #881111;
+  --green: #884444;
+  --tab-inactive: #2a0808;
+  --dark-input: #0f0202;
+}
+body {
+  background: radial-gradient(ellipse at top, #1a0000 0%, #050000 100%);
+}
+.container { border-color: #5a0000; box-shadow: 0 0 40px rgba(180,0,0,0.3), inset 0 0 60px rgba(100,0,0,0.1); }
+h1, h2, h3 { color: var(--gold); border-color: #5a0000; text-shadow: 0 0 10px rgba(255,50,50,0.4); }
+.stat-card { border-bottom-color: #cc0000; background: #200808; }
+.stat-mod { background: #2a0505; color: #ff4444; }
+.tabs-nav { border-color: #5a0000; }
+.tab-btn.active { color: #ff4444; border-color: #5a0000; }
+.vitals-grid { background: #160404; border-color: #5a0000; }
+.level-badge { border-color: #cc0000; }
+.lvl-val { color: #ff4444; text-shadow: 0 0 15px rgba(255,0,0,0.5); }
+.skill-item { border-left-color: #cc0000; }
+.stat-skill { color: #774444; }
+.stat-skill.proficient { color: #ff4444; }
+.stat-skill.proficient::before { color: #ff4444; }
+```
+
+---
+
+## 🌿 Лесной Следопыт
 Тёмно-зелёный, природный. Для друидов и рейнджеров.
 
 ```css
@@ -33,7 +146,8 @@
 }
 body {
   background: #070f07;
-  background-image: radial-gradient(ellipse at 30% 20%, rgba(30,70,20,0.4) 0%, transparent 50%),
+  background-image:
+    radial-gradient(ellipse at 30% 20%, rgba(30,70,20,0.4) 0%, transparent 50%),
     radial-gradient(ellipse at 70% 80%, rgba(10,50,15,0.3) 0%, transparent 50%);
 }
 .container { border-color: #2a4a2a; box-shadow: 0 0 40px rgba(0,80,20,0.2); }
@@ -47,12 +161,15 @@ h1, h2, h3 { color: #7ec850; border-color: #2a4a2a; }
 .tabs-nav { border-color: #2a4a2a; }
 .tab-btn.active { color: #7ec850; border-color: #2a4a2a; }
 .add-zone { border-color: #2a4a2a; color: #4a6a3a; }
+.stat-skill { color: #4a6a3a; }
 .stat-skill.proficient { color: #7ec850; }
 .stat-skill.proficient::before { color: #7ec850; }
 input[type="text"], input[type="number"] { border-color: #2a4a2a; }
 ```
 
-### ✨ Звёздный Маг
+---
+
+## ✨ Звёздный Маг
 Тёмно-синий с мерцающим фиолетовым. Для волшебников и колдунов.
 
 ```css
@@ -71,8 +188,7 @@ body {
   background: #04051a;
   background-image:
     radial-gradient(ellipse at 20% 30%, rgba(109,40,217,0.2) 0%, transparent 45%),
-    radial-gradient(ellipse at 80% 70%, rgba(79,70,229,0.15) 0%, transparent 45%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    radial-gradient(ellipse at 80% 70%, rgba(79,70,229,0.15) 0%, transparent 45%);
 }
 .container { border-color: #312e81; box-shadow: 0 0 60px rgba(109,40,217,0.25), inset 0 0 80px rgba(79,70,229,0.05); }
 h1, h2, h3 { color: #a78bfa; border-color: #312e81; text-shadow: 0 0 12px rgba(167,139,250,0.4); }
@@ -84,13 +200,55 @@ h1, h2, h3 { color: #a78bfa; border-color: #312e81; text-shadow: 0 0 12px rgba(1
 .skill-item { border-left-color: #7c3aed; background: #0c0e30; }
 .tabs-nav { border-color: #312e81; }
 .tab-btn.active { color: #a78bfa; border-color: #312e81; }
+.stat-skill { color: #4a4870; }
 .stat-skill.proficient { color: #a78bfa; }
 .stat-skill.proficient::before { color: #a78bfa; }
 .spell-slot-card { border-color: #312e81; background: #0d0f38; }
 .spells-wrapper { border-color: #312e81; background: #07091f; }
 ```
 
-### 🔥 Пламя Феникса
+---
+
+## ☠️ Некромант
+Мертвенно-серый с зелёным свечением. Для нежити и тёмных магов.
+
+```css
+:root {
+  --gold: #39ff8a;
+  --bg: #050508;
+  --card: #0c0c10;
+  --text: #b0b8c0;
+  --blue: #1a9e6a;
+  --purple: #156e4a;
+  --green: #39ff8a;
+  --tab-inactive: #101015;
+  --dark-input: #080808;
+}
+body {
+  background: #050508;
+  background-image: radial-gradient(ellipse at 50% 0%, rgba(30,200,80,0.08) 0%, transparent 60%);
+}
+.container { border-color: #1a2e1a; box-shadow: 0 0 50px rgba(30,200,80,0.1), inset 0 0 100px rgba(0,0,0,0.3); }
+h1, h2, h3 { color: #39ff8a; border-color: #1a3a1a; text-shadow: 0 0 10px rgba(57,255,138,0.35); font-family: 'Courier New', monospace; }
+.stat-card { background: #0e0e14; border-bottom: 3px solid #39ff8a; }
+.stat-mod { background: #080810; color: #39ff8a; text-shadow: 0 0 8px rgba(57,255,138,0.5); }
+.vitals-grid { background: #090910; border-color: #1a3a1a; }
+.level-badge { border-color: #39ff8a; box-shadow: 0 0 15px rgba(57,255,138,0.2); }
+.lvl-val { color: #39ff8a; text-shadow: 0 0 20px rgba(57,255,138,0.7); font-family: 'Courier New', monospace; }
+.skill-item { border-left-color: #39ff8a; background: #0d0d12; }
+.tabs-nav { border-color: #1a3a1a; }
+.tab-btn.active { color: #39ff8a; border-color: #1a3a1a; }
+.stat-skill { color: #2a5a3a; }
+.stat-skill.proficient { color: #39ff8a; text-shadow: 0 0 5px rgba(57,255,138,0.4); }
+.stat-skill.proficient::before { color: #39ff8a; }
+.spell-slot-card { background: #0e0e14; border-color: #1a3a1a; }
+input[type="text"], input[type="number"] { border-color: #1a3a1a; color: #b0b8c0; }
+label { color: #39ff8a; }
+```
+
+---
+
+## 🔥 Пламя Феникса
 Огненный оранжево-алый. Для паладинов, жрецов огня, сорсеров.
 
 ```css
@@ -121,11 +279,53 @@ h1, h2, h3 { color: #ff9500; border-color: #5a2000; text-shadow: 0 0 10px rgba(2
 .skill-item { border-left-color: #cc5500; background: #1e0900; }
 .tabs-nav { border-color: #5a2000; }
 .tab-btn.active { color: #ff9500; border-color: #5a2000; }
+.stat-skill { color: #6a3a10; }
 .stat-skill.proficient { color: #ff9500; }
 .stat-skill.proficient::before { color: #ff9500; }
 .hp-box input { color: #ff4400; border-color: #cc2200; }
 .spell-slot-card { background: #220c00; border-color: #5a2000; }
 label { color: #cc6600; }
+```
+
+---
+
+## 🧊 Ледяной Маг / Зима
+Холодный синий. Для чародеев льда, эльфов, северных варваров.
+
+```css
+:root {
+  --gold: #88ccff;
+  --bg: #010a14;
+  --card: #041525;
+  --text: #cce8ff;
+  --blue: #1a7ab8;
+  --purple: #0e5a8a;
+  --green: #2299cc;
+  --tab-inactive: #071e30;
+  --dark-input: #020c18;
+}
+body {
+  background: #010a14;
+  background-image:
+    radial-gradient(ellipse at 40% 0%, rgba(30,100,180,0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 100%, rgba(10,60,120,0.15) 0%, transparent 50%);
+}
+.container { border-color: #0e3a5a; box-shadow: 0 0 50px rgba(20,100,180,0.15), inset 0 0 80px rgba(10,60,120,0.08); }
+h1, h2, h3 { color: #88ccff; border-color: #0e3a5a; text-shadow: 0 0 10px rgba(100,180,255,0.3); }
+.stat-card { background: #051a2e; border-bottom-color: #1a7ab8; }
+.stat-mod { background: #031020; color: #88ccff; }
+.vitals-grid { background: #031020; border-color: #0e3a5a; }
+.level-badge { border-color: #1a7ab8; box-shadow: 0 0 15px rgba(30,120,200,0.25); }
+.lvl-val { color: #88ccff; text-shadow: 0 0 15px rgba(136,204,255,0.5); }
+.skill-item { border-left-color: #1a7ab8; background: #051825; }
+.tabs-nav { border-color: #0e3a5a; }
+.tab-btn.active { color: #88ccff; border-color: #0e3a5a; }
+.stat-skill { color: #2a5070; }
+.stat-skill.proficient { color: #88ccff; }
+.stat-skill.proficient::before { color: #88ccff; }
+.ac-box input { color: #55aaff; border-color: #1a7ab8; }
+label { color: #4a90cc; }
+input[type="text"], input[type="number"] { border-color: #0e3a5a; color: #cce8ff; }
 ```
 
 </details>
