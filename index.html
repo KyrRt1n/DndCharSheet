@@ -158,7 +158,29 @@
         .npc-desc { background: #222; border: none; color: #ccc; font-family: inherit; font-size: 0.9rem; padding: 6px; border-radius: 4px; resize: vertical; min-height: 70px; width: 100%; box-sizing: border-box; }
         .npc-del { position: absolute; top: 6px; right: 6px; background: var(--red); color: white; border: none; font-size: 0.75rem; cursor: pointer; opacity: 0; width: 22px; height: 22px; border-radius: 4px; }
         .npc-card:hover .npc-del { opacity: 1; }
-        .notes-area { width: 100%; height: 100%; min-height: 200px; background: #222; border: 1px solid #444; color: #ddd; padding: 15px; border-radius: 8px; font-family: inherit; resize: vertical; box-sizing: border-box; }
+        .notes-area { width: 100%; min-height: 200px; background: #222; border: 1px solid #444; color: #ddd; padding: 15px; border-radius: 8px; font-family: inherit; resize: vertical; box-sizing: border-box; }
+        .notes-toolbar { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+        .notes-tool-btn { background: #333; border: 1px solid #555; color: #aaa; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: 0.2s; }
+        .notes-tool-btn:hover { border-color: var(--gold); color: var(--gold); }
+        .notes-tool-btn.active { background: #444; border-color: var(--gold); color: var(--gold); }
+        .notes-preview { display: none; min-height: 200px; background: #222; border: 1px solid #444; color: #ddd; padding: 15px; border-radius: 8px; box-sizing: border-box; line-height: 1.7; overflow-y: auto; }
+        .notes-preview h1, .notes-preview h2, .notes-preview h3 { color: var(--gold); border-bottom: 1px dashed #444; padding-bottom: 4px; margin-top: 16px; }
+        .notes-preview h1 { font-size: 1.4rem; }
+        .notes-preview h2 { font-size: 1.2rem; }
+        .notes-preview h3 { font-size: 1rem; }
+        .notes-preview strong { color: #fff; }
+        .notes-preview em { color: #bbb; font-style: italic; }
+        .notes-preview code { background: #111; border: 1px solid #333; border-radius: 3px; padding: 1px 5px; font-family: 'Courier New', monospace; font-size: 0.85em; color: #7ec8e3; }
+        .notes-preview pre { background: #111; border: 1px solid #333; border-radius: 6px; padding: 10px; overflow-x: auto; }
+        .notes-preview pre code { border: none; background: none; padding: 0; }
+        .notes-preview ul, .notes-preview ol { padding-left: 20px; }
+        .notes-preview li { margin: 3px 0; }
+        .notes-preview blockquote { border-left: 3px solid var(--gold); margin: 0; padding: 4px 12px; color: #aaa; background: #1a1a1a; border-radius: 0 4px 4px 0; }
+        .notes-preview hr { border: none; border-top: 1px solid #444; margin: 12px 0; }
+        .notes-preview a { color: var(--blue); }
+        .notes-preview table { border-collapse: collapse; width: 100%; }
+        .notes-preview th, .notes-preview td { border: 1px solid #444; padding: 5px 10px; }
+        .notes-preview th { background: #333; color: var(--gold); }
 
         .controls { display: flex; gap: 10px; margin-top: auto; border-top: 1px solid #444; padding-top: 20px; flex-wrap: wrap; justify-content: center; }
         /* Dropdown btn */
@@ -304,6 +326,7 @@
             .bonuses-grid, .traits-grid { grid-template-columns: 1fr; }
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 </head>
 <body>
 
@@ -466,7 +489,13 @@
     </div>
 
     <div id="notes" class="tab-pane">
-        <textarea id="charNotes" class="notes-area" placeholder="Важные записи..." style="min-height:400px;"></textarea>
+        <div class="notes-toolbar">
+            <button class="notes-tool-btn active" id="notesEditBtn" onclick="notesSetMode('edit')">✏️ Редактор</button>
+            <button class="notes-tool-btn" id="notesPreviewBtn" onclick="notesSetMode('preview')">👁️ Preview</button>
+            <span style="font-size:0.72rem;color:#555;margin-left:4px;">Поддерживается Markdown</span>
+        </div>
+        <textarea id="charNotes" class="notes-area" placeholder="Важные записи... (поддерживается **Markdown**)" style="min-height:400px;"></textarea>
+        <div id="notesPreview" class="notes-preview" style="min-height:400px;"></div>
         <h3 style="margin-top:20px;">🧑‍🤝‍🧑 Известные персонажи</h3>
         <div id="npcList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px;"></div>
         <div class="add-zone" onclick="addNpc()">+ Добавить персонажа</div>
@@ -1356,6 +1385,30 @@
         if (url) _setBg(url, dim, opacity);
         _applyOpacity(opacity);
     }
+    // --- MARKDOWN NOTES ---
+    function notesSetMode(mode) {
+        const ta = document.getElementById('charNotes');
+        const preview = document.getElementById('notesPreview');
+        const editBtn = document.getElementById('notesEditBtn');
+        const previewBtn = document.getElementById('notesPreviewBtn');
+        if (mode === 'preview') {
+            const html = typeof marked !== 'undefined'
+                ? marked.parse(ta.value || '*Нет записей*')
+                : ta.value.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+            preview.innerHTML = html;
+            preview.style.display = 'block';
+            ta.style.display = 'none';
+            editBtn.classList.remove('active');
+            previewBtn.classList.add('active');
+        } else {
+            preview.style.display = 'none';
+            ta.style.display = 'block';
+            editBtn.classList.add('active');
+            previewBtn.classList.remove('active');
+            ta.focus();
+        }
+    }
+
     window.onload = () => { loadCharacter(); loadCustomCss(); loadBg(); };
 </script>
 </body>
