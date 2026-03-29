@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐉</text></svg>">
-    <title>D&D Hero Sheet v23 (Markdown and textbox size remembe)</title>
+    <title>D&D Hero Sheet v24 (Skill colors)</title>
     <style>
         /* === 1. БАЗОВЫЕ СТИЛИ (ПК) === */
         :root { --gold: #d4af37; --bg: #1a1a1a; --card: #2d2d2d; --text: #e0e0e0; --red: #c0392b; --green: #27ae60; --blue: #2980b9; --purple: #9b59b6; --dark-input: #111; --tab-inactive: #333; }
@@ -119,7 +119,16 @@
         .inv-slot { display: grid; grid-template-columns: 80px 30% 1fr 40px; gap: 10px; background: #2d2d2d; padding: 8px; border-radius: 4px; align-items: start; border-left: 3px solid #555; transition: background 0.2s; }
 
         /* Skills */
-        .skill-item { background: #383838; padding: 8px 10px; border-radius: 6px; margin-bottom: 8px; position: relative; border-left: 4px solid var(--green); display: flex; flex-direction: column; gap: 5px; }
+        .skill-item {
+            background: #383838; padding: 8px 10px 8px 14px;
+            border-radius: 6px; margin-bottom: 8px; position: relative;
+            display: flex; flex-direction: column; gap: 5px; overflow: hidden;
+        }
+        .skill-color-strip {
+            position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
+            cursor: pointer; transition: filter 0.2s;
+        }
+        .skill-color-strip:hover { filter: brightness(1.4); box-shadow: 0 0 8px rgba(255,255,255,0.3); }
         .skill-header { display: flex; gap: 8px; align-items: center; width: 100%; padding-right: 25px; box-sizing: border-box; }
         .skill-name { font-weight: bold; background: #2b2b2b; border: none; flex-grow: 1; padding: 5px; color:white; border-radius: 3px; }
         .skill-cast-box { display: flex; gap: 2px; align-items: center; background: #222; padding: 2px; border-radius: 4px; border: 1px solid #555; }
@@ -537,6 +546,26 @@
     </div>
 </div>
 
+<div id="colorPickerModal" class="modal">
+    <div class="modal-content" style="max-width: 320px;">
+        <h2 style="color:var(--blue);">🎨 Цвет способности</h2>
+        <div style="display:flex; flex-direction:column; gap:15px; margin-top:15px;">
+            <div style="display:flex; align-items:center; gap:10px; justify-content:center;">
+                <label style="color:#aaa; font-size:0.85rem;">Выбрать цвет:</label>
+                <input type="color" id="skillColorInput" style="width: 50px; height: 35px; cursor: pointer; padding: 0; border: 1px solid #555; background: #111; border-radius: 4px;">
+            </div>
+            <div style="text-align:left;">
+                <label style="color:#aaa; font-size:0.75rem; display:block; margin-bottom:8px;">Недавние и базовые цвета:</label>
+                <div id="colorPalette" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+            </div>
+        </div>
+        <div class="modal-btns" style="margin-top:20px;">
+            <button class="btn btn-save" onclick="applySkillColor()">✅ Применить</button>
+            <button class="btn" style="background:#333; color:#aaa;" onclick="closeColorPicker()">Закрыть</button>
+        </div>
+    </div>
+</div>
+
 <div id="cssModal" class="modal">
     <div class="modal-content modal-wide">
         <h2 style="color:var(--blue);">🎨 Кастомизация</h2>
@@ -862,11 +891,70 @@
         renderItemIcon(wrap, name, '');
         saveCharacter();
     }
-    function addSkill(name = '', desc = '', cost = '', link = '', h = '') {
+
+    // --- COLOR PICKER LOGIC ---
+    let activeColorStrip = null;
+
+    function openColorPicker(strip) {
+        activeColorStrip = strip;
+        const skillItem = strip.closest('.skill-item');
+        const currentColor = skillItem.getAttribute('data-color') || '#27ae60';
+
+        document.getElementById('skillColorInput').value = currentColor;
+
+        // Palette combines currently used colors and fixed defaults.
+        const usedColors = new Set();
+        document.querySelectorAll('.skill-item').forEach(item => {
+            const color = item.getAttribute('data-color');
+            if (color) usedColors.add(color);
+        });
+        ['#27ae60', '#2980b9', '#c0392b', '#8e44ad', '#d4af37', '#e67e22', '#34495e'].forEach(c => usedColors.add(c));
+
+        const palette = document.getElementById('colorPalette');
+        palette.innerHTML = '';
+        usedColors.forEach(color => {
+            const btn = document.createElement('div');
+            btn.style.width = '24px';
+            btn.style.height = '24px';
+            btn.style.borderRadius = '50%';
+            btn.style.background = color;
+            btn.style.cursor = 'pointer';
+            btn.style.boxShadow = '0 0 2px rgba(0,0,0,0.5)';
+            btn.style.border = (color.toLowerCase() === currentColor.toLowerCase()) ? '2px solid #fff' : '2px solid transparent';
+            btn.onclick = () => {
+                document.getElementById('skillColorInput').value = color;
+                Array.from(palette.children).forEach(child => child.style.border = '2px solid transparent');
+                btn.style.border = '2px solid #fff';
+            };
+            palette.appendChild(btn);
+        });
+
+        document.getElementById('colorPickerModal').style.display = 'flex';
+    }
+
+    function applySkillColor() {
+        if (activeColorStrip) {
+            const color = document.getElementById('skillColorInput').value;
+            const skillItem = activeColorStrip.closest('.skill-item');
+            skillItem.setAttribute('data-color', color);
+            activeColorStrip.style.backgroundColor = color;
+            saveCharacter();
+        }
+        closeColorPicker();
+    }
+
+    function closeColorPicker() {
+        document.getElementById('colorPickerModal').style.display = 'none';
+        activeColorStrip = null;
+    }
+
+    function addSkill(name = '', desc = '', cost = '', link = '', h = '', color = '#27ae60') {
         const div = document.createElement('div');
         div.className = 'skill-item';
+        div.setAttribute('data-color', color);
         const escapedLink = link.replace(/"/g, '&quot;');
         div.innerHTML = `
+            <div class="skill-color-strip" style="background-color: ${color};" onclick="openColorPicker(this)" title="Изменить цвет"></div>
             <div class="skill-controls">
                 <button class="ctrl-btn" onclick="moveUp(this)">▲</button>
                 <button class="ctrl-btn del" onclick="this.closest('.skill-item').remove()">✖</button>
@@ -980,7 +1068,17 @@
         const items = [];
         document.querySelectorAll('.inv-slot').forEach(r => { const img = r.querySelector('.item-icon'); const ta = r.querySelector('.item-desc'); items.push({ name: r.querySelector('.item-name').value, desc: ta.value, img: (img && img.src && img.src.startsWith('data:')) ? img.src : '', h: ta.style.height || '' }); });
         const skills = [];
-        document.querySelectorAll('.skill-item').forEach(i => { const ta = i.querySelector('textarea'); skills.push({ name: i.querySelector('.skill-name').value, desc: ta.value, cost: i.querySelector('.skill-level-input').value, link: i.querySelector('.skill-link-input').value || '', h: ta.style.height || '' }); });
+        document.querySelectorAll('.skill-item').forEach(i => {
+            const ta = i.querySelector('textarea');
+            skills.push({
+                name: i.querySelector('.skill-name').value,
+                desc: ta.value,
+                cost: i.querySelector('.skill-level-input').value,
+                link: i.querySelector('.skill-link-input').value || '',
+                h: ta.style.height || '',
+                color: i.getAttribute('data-color') || '#27ae60'
+            });
+        });
         const bonuses = [];
         document.querySelectorAll('.bonus-item').forEach(b => bonuses.push({ name: b.querySelector('.bonus-name').value, val: b.querySelector('.bonus-val').value }));
         const traits = [];
@@ -1092,7 +1190,7 @@
         document.getElementById('inventoryList').innerHTML = '';
         if (data.items) data.items.forEach(item => addItem(item.name, item.desc, item.img || '', item.h || ''));
         document.getElementById('skillsList').innerHTML = '';
-        if (data.skills) data.skills.forEach(s => addSkill(s.name, s.desc, s.cost, s.link || '', s.h || ''));
+        if (data.skills) data.skills.forEach(s => addSkill(s.name, s.desc, s.cost, s.link || '', s.h || '', s.color || '#27ae60'));
         document.getElementById('bonusList').innerHTML = '';
         if (data.bonuses) data.bonuses.forEach(b => addBonus(b.name, b.val));
         document.getElementById('traitsList').innerHTML = '';
