@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐉</text></svg>">
-    <title>D&D Hero Sheet v22 (Item icons, race/class links)</title>
+    <title>D&D Hero Sheet v23 (Markdown and textbox size remembe)</title>
     <style>
         /* === 1. БАЗОВЫЕ СТИЛИ (ПК) === */
         :root { --gold: #d4af37; --bg: #1a1a1a; --card: #2d2d2d; --text: #e0e0e0; --red: #c0392b; --green: #27ae60; --blue: #2980b9; --purple: #9b59b6; --dark-input: #111; --tab-inactive: #333; }
@@ -804,7 +804,7 @@
             wrap.insertBefore(p, del);
         }
     }
-    function addItem(name = '', desc = '', img = '') {
+    function addItem(name = '', desc = '', img = '', h = '') {
         const div = document.createElement('div');
         div.className = 'inv-slot';
         div.innerHTML = `
@@ -820,6 +820,7 @@
             </div>`;
         document.getElementById('inventoryList').appendChild(div);
         renderItemIcon(div.querySelector('.item-icon-wrap'), name, img);
+        if (h) div.querySelector('.item-desc').style.height = h;
     }
     function updateItemPlaceholder(input) {
         const wrap = input.closest('.inv-slot').querySelector('.item-icon-wrap');
@@ -861,7 +862,7 @@
         renderItemIcon(wrap, name, '');
         saveCharacter();
     }
-    function addSkill(name = '', desc = '', cost = '', link = '') {
+    function addSkill(name = '', desc = '', cost = '', link = '', h = '') {
         const div = document.createElement('div');
         div.className = 'skill-item';
         const escapedLink = link.replace(/"/g, '&quot;');
@@ -885,6 +886,7 @@
             </div>
             <textarea placeholder="Детали...">${desc}</textarea>`;
         document.getElementById('skillsList').appendChild(div);
+        if (h) div.querySelector('textarea').style.height = h;
     }
     function addBonus(name = '', val = '') {
         const div = document.createElement('div');
@@ -896,7 +898,7 @@
         `;
         document.getElementById('bonusList').appendChild(div);
     }
-    function addTrait(name = '', desc = '') {
+    function addTrait(name = '', desc = '', h = '') {
         const div = document.createElement('div');
         div.className = 'trait-card';
         div.innerHTML = `
@@ -905,6 +907,7 @@
             <textarea class="trait-desc" placeholder="Описание...">${desc}</textarea>
         `;
         document.getElementById('traitsList').appendChild(div);
+        if (h) div.querySelector('.trait-desc').style.height = h;
     }
 
     let avatarBase64 = "";
@@ -975,18 +978,13 @@
     // --- DATA ---
     function gatherData() {
         const items = [];
-        document.querySelectorAll('.inv-slot').forEach(r => { const img = r.querySelector('.item-icon'); items.push({ name: r.querySelector('.item-name').value, desc: r.querySelector('.item-desc').value, img: (img && img.src && img.src.startsWith('data:')) ? img.src : '' }); });
+        document.querySelectorAll('.inv-slot').forEach(r => { const img = r.querySelector('.item-icon'); const ta = r.querySelector('.item-desc'); items.push({ name: r.querySelector('.item-name').value, desc: ta.value, img: (img && img.src && img.src.startsWith('data:')) ? img.src : '', h: ta.style.height || '' }); });
         const skills = [];
-        document.querySelectorAll('.skill-item').forEach(i => skills.push({ 
-            name: i.querySelector('.skill-name').value, 
-            desc: i.querySelector('textarea').value,
-            cost: i.querySelector('.skill-level-input').value,
-            link: i.querySelector('.skill-link-input').value || ''
-        }));
+        document.querySelectorAll('.skill-item').forEach(i => { const ta = i.querySelector('textarea'); skills.push({ name: i.querySelector('.skill-name').value, desc: ta.value, cost: i.querySelector('.skill-level-input').value, link: i.querySelector('.skill-link-input').value || '', h: ta.style.height || '' }); });
         const bonuses = [];
         document.querySelectorAll('.bonus-item').forEach(b => bonuses.push({ name: b.querySelector('.bonus-name').value, val: b.querySelector('.bonus-val').value }));
         const traits = [];
-        document.querySelectorAll('.trait-card').forEach(t => traits.push({ name: t.querySelector('.trait-name').value, desc: t.querySelector('.trait-desc').value }));
+        document.querySelectorAll('.trait-card').forEach(t => { const ta = t.querySelector('.trait-desc'); traits.push({ name: t.querySelector('.trait-name').value, desc: ta.value, h: ta.style.height || '' }); });
         const stats = Array.from(document.querySelectorAll('.stat-card .stat-val')).map(i => i.value);
         const statsTemp = Array.from(document.querySelectorAll('.stat-card .stat-temp')).map(i => i.value);
         const spellData = {};
@@ -1011,10 +1009,10 @@
                 custom: document.getElementById('curr-custom').value
             },
             stats, statsTemp, items, skills, bonuses, traits, spells: spellData, 
-            notes: document.getElementById('charNotes').value, avatar: avatarBase64,
-            languages: document.getElementById('charLanguages').value,
+            notes: document.getElementById('charNotes').value, notesH: document.getElementById('charNotes').style.height || '', avatar: avatarBase64,
+            languages: document.getElementById('charLanguages').value, languagesH: document.getElementById('charLanguages').style.height || '',
             skillProfs: Array.from(document.querySelectorAll('.stat-skill.proficient')).map(el => el.dataset.skill),
-            npcs: Array.from(document.querySelectorAll('.npc-card')).map(c => ({ name: c.querySelector('.npc-name').value, desc: c.querySelector('.npc-desc').value })),
+            npcs: Array.from(document.querySelectorAll('.npc-card')).map(c => { const ta = c.querySelector('.npc-desc'); return { name: c.querySelector('.npc-name').value, desc: ta.value, h: ta.style.height || '' }; }),
             spellDC: document.getElementById('spellDC').value,
             dcStat: document.getElementById('dcStat').value,
             theme: {
@@ -1055,7 +1053,8 @@
         document.getElementById('speed').value = data.speed || 30;
         document.getElementById('profBonus').value = data.profBonus || 2;
         document.getElementById('charNotes').value = data.notes || '';
-        if (document.getElementById('charLanguages')) document.getElementById('charLanguages').value = data.languages || '';
+        if (data.notesH) document.getElementById('charNotes').style.height = data.notesH;
+        if (document.getElementById('charLanguages')) { document.getElementById('charLanguages').value = data.languages || ''; if (data.languagesH) document.getElementById('charLanguages').style.height = data.languagesH; }
         document.querySelectorAll('.stat-skill').forEach(el => el.classList.remove('proficient'));
         if (data.skillProfs) data.skillProfs.forEach(name => {
             document.querySelectorAll('.stat-skill').forEach(el => { if(el.dataset.skill === name) el.classList.add('proficient'); });
@@ -1091,15 +1090,15 @@
         }
 
         document.getElementById('inventoryList').innerHTML = '';
-        if (data.items) data.items.forEach(item => addItem(item.name, item.desc, item.img || ''));
+        if (data.items) data.items.forEach(item => addItem(item.name, item.desc, item.img || '', item.h || ''));
         document.getElementById('skillsList').innerHTML = '';
-        if (data.skills) data.skills.forEach(s => addSkill(s.name, s.desc, s.cost, s.link || ''));
+        if (data.skills) data.skills.forEach(s => addSkill(s.name, s.desc, s.cost, s.link || '', s.h || ''));
         document.getElementById('bonusList').innerHTML = '';
         if (data.bonuses) data.bonuses.forEach(b => addBonus(b.name, b.val));
         document.getElementById('traitsList').innerHTML = '';
-        if (data.traits) data.traits.forEach(t => addTrait(t.name, t.desc));
+        if (data.traits) data.traits.forEach(t => addTrait(t.name, t.desc, t.h || ''));
         document.getElementById('npcList').innerHTML = '';
-        if (data.npcs) data.npcs.forEach(n => addNpc(n.name, n.desc));
+        if (data.npcs) data.npcs.forEach(n => addNpc(n.name, n.desc, n.h || ''));
         if (data.theme) {
             const t = data.theme;
             if (t.css)       { localStorage.setItem('custom_css', t.css); }
@@ -1111,7 +1110,7 @@
         }
     }
 
-    function addNpc(name = '', desc = '') {
+    function addNpc(name = '', desc = '', h = '') {
         const div = document.createElement('div');
         div.className = 'npc-card';
         div.innerHTML = `
@@ -1119,6 +1118,7 @@
             <input type="text" class="npc-name" placeholder="Имя персонажа..." value="${name.replace(/"/g,'&quot;')}">
             <textarea class="npc-desc" placeholder="Заметки о персонаже...">${desc}</textarea>`;
         document.getElementById('npcList').appendChild(div);
+        if (h) div.querySelector('.npc-desc').style.height = h;
         if (!name) div.querySelector('.npc-name').focus();
     }
 
@@ -1408,6 +1408,11 @@
             ta.focus();
         }
     }
+
+    // Автосохранение при ручном растягивании textarea
+    let _rszTarget = null;
+    document.addEventListener('mousedown', e => { if (e.target.tagName === 'TEXTAREA') { _rszTarget = e.target; _rszTarget._rszH = e.target.offsetHeight; } });
+    document.addEventListener('mouseup', () => { if (_rszTarget && _rszTarget.offsetHeight !== _rszTarget._rszH) saveCharacter(); _rszTarget = null; });
 
     window.onload = () => { loadCharacter(); loadCustomCss(); loadBg(); };
 </script>
