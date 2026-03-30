@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐉</text></svg>">
-    <title>D&D Hero Sheet v24 (Skill colors)</title>
+    <title>D&D Hero Sheet v25 (Hotkeys, de/buffs, collapse descriptions and states sheet)</title>
     <style>
         /* === 1. БАЗОВЫЕ СТИЛИ (ПК) === */
         :root { --gold: #d4af37; --bg: #1a1a1a; --card: #2d2d2d; --text: #e0e0e0; --red: #c0392b; --green: #27ae60; --blue: #2980b9; --purple: #9b59b6; --dark-input: #111; --tab-inactive: #333; }
@@ -124,6 +124,7 @@
             border-radius: 6px; margin-bottom: 8px; position: relative;
             display: flex; flex-direction: column; gap: 5px; overflow: hidden;
         }
+        .skill-item.collapsed textarea { display: none; }
         .skill-color-strip {
             position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
             cursor: pointer; transition: filter 0.2s;
@@ -142,6 +143,35 @@
         .skill-link-input { width: 160px; font-size: 0.78rem; padding: 3px 5px; background: #111; border: 1px solid var(--gold); color: white; border-radius: 3px; }
         .skill-item textarea { width: 97.5%; background: #2b2b2b; border: none; color: #e0e0e0; font-family: inherit; font-size: 0.9rem; box-sizing: border-box; padding: 5px; resize: vertical; min-height: 40px; }
         .skill-controls { position: absolute; top: 5px; right: 5px; display: flex; flex-direction: column; gap: 2px; z-index: 10; }
+        .skill-collapse-btn {
+            width: 28px; height: 28px; background: #1f1f1f; border: 1px solid #555; color: #ddd;
+            border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem; line-height: 1;
+            transition: 0.2s; flex-shrink: 0;
+        }
+        .skill-collapse-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+        /* Effects tracker */
+        .effects-wrapper { background: #222; border: 1px solid #444; border-radius: 8px; padding: 12px; margin-top: 15px; }
+        .effect-item {
+            background: #2d2d2d; border: 1px solid #444; border-radius: 6px; padding: 8px;
+            display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; border-left: 4px solid #777;
+        }
+        .effect-item.buff { border-left-color: var(--green); }
+        .effect-item.debuff { border-left-color: var(--red); }
+        .effect-item.neutral { border-left-color: var(--blue); }
+        .effect-top { display: grid; grid-template-columns: minmax(140px, 1fr) 90px 120px 90px auto; gap: 6px; align-items: center; }
+        .effect-top input, .effect-top select { padding: 6px; font-size: 0.85rem; }
+        .effect-note { width: 100%; background: #1a1a1a; border: 1px solid #444; color: #ddd; border-radius: 4px; padding: 6px; box-sizing: border-box; min-height: 36px; }
+        .effect-controls { display: flex; gap: 2px; justify-content: flex-end; }
+
+        /* Conditions cheat sheet */
+        .states-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px; text-align: left; }
+        .state-card {
+            background: #222; border: 1px solid #444; border-left: 3px solid var(--gold); border-radius: 6px;
+            padding: 8px;
+        }
+        .state-card h4 { margin: 0 0 5px; color: var(--gold); font-size: 0.9rem; }
+        .state-card p { margin: 0; color: #bbb; font-size: 0.78rem; line-height: 1.4; }
 
         /* Controls */
         .ctrl-btn { background: transparent; border: none; color: #666; cursor: pointer; font-size: 0.9rem; padding: 2px; transition: color 0.2s; }
@@ -289,6 +319,10 @@
             .skill-link-input { width: 100%; box-sizing: border-box; }
             .skill-item textarea { width: 100%; }
             .ctrl-btn { font-size: 1.1rem; padding: 4px 8px; border: 1px solid #555; background: rgba(0,0,0,0.3); border-radius: 4px; }
+
+            .effect-top { grid-template-columns: 1fr 1fr; }
+            .effect-controls { grid-column: span 2; justify-content: flex-start; }
+            .states-grid { grid-template-columns: 1fr; }
 
             /* Magic */
             .bonuses-grid { grid-template-columns: 1fr 1fr; }
@@ -453,6 +487,12 @@
             <label>🗣️ Языки</label>
             <textarea id="charLanguages" placeholder="Общий, Эльфийский, Дварфийский..."></textarea>
         </div>
+
+        <div class="effects-wrapper">
+            <h3 style="margin-top:0;">🧪 Баффы и Дебаффы</h3>
+            <div id="effectsList"></div>
+            <div class="add-zone" onclick="addEffect()">+ Добавить эффект</div>
+        </div>
     </div>
 
     <div id="skills" class="tab-pane">
@@ -529,6 +569,7 @@
         </div>
         <input type="file" id="importFile" style="display:none" onchange="importFromFile(this)">
         <button class="btn btn-io" onclick="toggleCssModal()" style="background:#2c6e6e;">🎨 CSS</button>
+        <button class="btn btn-io" onclick="toggleStatesModal()" style="background:#5e4a1f;">📚 Состояния</button>
         <button class="btn btn-clear" onclick="clearCharacter()">🗑️ Clear</button>
     </div>
 </div>
@@ -606,6 +647,33 @@
     </div>
 </div>
 
+<div id="statesModal" class="modal">
+    <div class="modal-content" style="max-width: 760px; text-align:left;">
+        <h2 style="color:var(--gold); margin-bottom:2px;">📚 Шпаргалка по состояниям</h2>
+        <p style="margin-top:0;">Кратко: что делает состояние с персонажем.</p>
+        <div class="states-grid">
+            <div class="state-card"><h4>Очарован</h4><p>Не может атаковать или вредить источнику очарования; источник имеет преимущество в соцпроверках против цели.</p></div>
+            <div class="state-card"><h4>Испуган</h4><p>Помеха на проверки и атаки, пока источник в поле зрения; не может добровольно приближаться к источнику страха.</p></div>
+            <div class="state-card"><h4>Сбит с ног</h4><p>Ползает; встать стоит половину скорости. Атаки вблизи с преимуществом, дальние атаки по цели с помехой.</p></div>
+            <div class="state-card"><h4>Опутан</h4><p>Скорость 0, бонусы к скорости не работают; помеха на атаки и ЛОВ спасброски, атаки по цели с преимуществом.</p></div>
+            <div class="state-card"><h4>Невидим</h4><p>Невозможно видеть без спецчувств/магии; атаки невидимого с преимуществом, атаки по нему с помехой.</p></div>
+            <div class="state-card"><h4>Оглушен</h4><p>Недееспособен, не может двигаться и говорить; проваливает СИЛ и ЛОВ спасброски; атаки по нему с преимуществом.</p></div>
+            <div class="state-card"><h4>Парализован</h4><p>Недееспособен и не может двигаться/говорить; автопровал СИЛ и ЛОВ спасбросков; ближняя атака с 5 фт может стать критом.</p></div>
+            <div class="state-card"><h4>Окаменевший</h4><p>Превращен в камень: недееспособен, не осознает, сопротивляется урону, иммунен к яду/болезням.</p></div>
+            <div class="state-card"><h4>Ослеплен</h4><p>Не видит, автопровал проверок с опорой на зрение; атаки цели с помехой, атаки по ней с преимуществом.</p></div>
+            <div class="state-card"><h4>Оглохший</h4><p>Не слышит, автопровал проверок, завязанных на слух.</p></div>
+            <div class="state-card"><h4>Схвачен</h4><p>Скорость 0. Обычно заканчивается, если схвативший недееспособен или цель выходит из захвата.</p></div>
+            <div class="state-card"><h4>Недееспособен</h4><p>Не может выполнять действия и реакции.</p></div>
+            <div class="state-card"><h4>Без сознания</h4><p>Недееспособен, не может двигаться/говорить, не осознает; роняет предметы и падает ничком; автопровал СИЛ/ЛОВ спасбросков.</p></div>
+            <div class="state-card"><h4>Отравлен</h4><p>Помеха на броски атаки и проверки характеристик.</p></div>
+            <div class="state-card"><h4>Изнурение</h4><p>Нарастающие штрафы по уровням истощения, вплоть до смерти на 6 уровне.</p></div>
+        </div>
+        <div class="modal-btns" style="margin-top:12px;">
+            <button class="btn" style="background:#333;color:#aaa;" onclick="toggleStatesModal()">Закрыть</button>
+        </div>
+    </div>
+</div>
+
 <script>
     // --- TABS ---
     function openTab(tabId) {
@@ -669,11 +737,11 @@
 
     // --- REORDER ---
     function moveUp(btn) {
-        const item = btn.closest('.inv-slot') || btn.closest('.skill-item');
+        const item = btn.closest('.inv-slot') || btn.closest('.skill-item') || btn.closest('.effect-item');
         if (item && item.previousElementSibling) item.parentNode.insertBefore(item, item.previousElementSibling);
     }
     function moveDown(btn) {
-        const item = btn.closest('.inv-slot') || btn.closest('.skill-item');
+        const item = btn.closest('.inv-slot') || btn.closest('.skill-item') || btn.closest('.effect-item');
         if (item && item.nextElementSibling) item.parentNode.insertBefore(item.nextElementSibling, item);
     }
 
@@ -948,9 +1016,19 @@
         activeColorStrip = null;
     }
 
-    function addSkill(name = '', desc = '', cost = '', link = '', h = '', color = '#27ae60') {
+    function toggleSkillBody(btn, forceCollapsed = null) {
+        const item = btn.closest('.skill-item');
+        const collapsed = (forceCollapsed === null) ? !item.classList.contains('collapsed') : !!forceCollapsed;
+        item.classList.toggle('collapsed', collapsed);
+        btn.textContent = collapsed ? '▸' : '▾';
+        btn.title = collapsed ? 'Развернуть описание' : 'Свернуть описание';
+        saveCharacter();
+    }
+
+    function addSkill(name = '', desc = '', cost = '', link = '', h = '', color = '#27ae60', collapsed = false) {
         const div = document.createElement('div');
         div.className = 'skill-item';
+        if (collapsed) div.classList.add('collapsed');
         div.setAttribute('data-color', color);
         const escapedLink = link.replace(/"/g, '&quot;');
         div.innerHTML = `
@@ -971,6 +1049,7 @@
                     <input type="number" class="skill-level-input" placeholder="Lvl" value="${cost}">
                     <button class="btn-cast" onclick="useSpellSlot(this)">Cast</button>
                 </div>
+                <button class="skill-collapse-btn" onclick="toggleSkillBody(this)" title="${collapsed ? 'Развернуть описание' : 'Свернуть описание'}">${collapsed ? '▸' : '▾'}</button>
             </div>
             <textarea placeholder="Детали...">${desc}</textarea>`;
         document.getElementById('skillsList').appendChild(div);
@@ -996,6 +1075,38 @@
         `;
         document.getElementById('traitsList').appendChild(div);
         if (h) div.querySelector('.trait-desc').style.height = h;
+    }
+
+    function addEffect(name = '', type = 'buff', source = '', duration = '', note = '') {
+        const div = document.createElement('div');
+        const safeType = ['buff', 'debuff', 'neutral'].includes(type) ? type : 'neutral';
+        div.className = 'effect-item ' + safeType;
+        div.innerHTML = `
+            <div class="effect-top">
+                <input type="text" class="effect-name" placeholder="Название эффекта" value="${name.replace(/"/g, '&quot;')}">
+                <select class="effect-type" onchange="setEffectType(this)">
+                    <option value="buff" ${safeType === 'buff' ? 'selected' : ''}>Бафф</option>
+                    <option value="debuff" ${safeType === 'debuff' ? 'selected' : ''}>Дебафф</option>
+                    <option value="neutral" ${safeType === 'neutral' ? 'selected' : ''}>Прочее</option>
+                </select>
+                <input type="text" class="effect-source" placeholder="Источник" value="${source.replace(/"/g, '&quot;')}">
+                <input type="text" class="effect-duration" placeholder="Длительность" value="${duration.replace(/"/g, '&quot;')}">
+                <div class="effect-controls">
+                    <button class="ctrl-btn" onclick="moveUp(this)">▲</button>
+                    <button class="ctrl-btn del" onclick="this.closest('.effect-item').remove(); saveCharacter();">✖</button>
+                    <button class="ctrl-btn" onclick="moveDown(this)">▼</button>
+                </div>
+            </div>
+            <textarea class="effect-note" placeholder="Что именно дает/штрафует...">${note}</textarea>
+        `;
+        document.getElementById('effectsList').appendChild(div);
+    }
+
+    function setEffectType(select) {
+        const item = select.closest('.effect-item');
+        item.classList.remove('buff', 'debuff', 'neutral');
+        item.classList.add(select.value);
+        saveCharacter();
     }
 
     let avatarBase64 = "";
@@ -1076,7 +1187,18 @@
                 cost: i.querySelector('.skill-level-input').value,
                 link: i.querySelector('.skill-link-input').value || '',
                 h: ta.style.height || '',
-                color: i.getAttribute('data-color') || '#27ae60'
+                color: i.getAttribute('data-color') || '#27ae60',
+                collapsed: i.classList.contains('collapsed')
+            });
+        });
+        const effects = [];
+        document.querySelectorAll('.effect-item').forEach(e => {
+            effects.push({
+                name: e.querySelector('.effect-name').value,
+                type: e.querySelector('.effect-type').value,
+                source: e.querySelector('.effect-source').value,
+                duration: e.querySelector('.effect-duration').value,
+                note: e.querySelector('.effect-note').value
             });
         });
         const bonuses = [];
@@ -1106,7 +1228,7 @@
                 sp: document.getElementById('curr-sp').value, cp: document.getElementById('curr-cp').value,
                 custom: document.getElementById('curr-custom').value
             },
-            stats, statsTemp, items, skills, bonuses, traits, spells: spellData, 
+            stats, statsTemp, items, skills, effects, bonuses, traits, spells: spellData, 
             notes: document.getElementById('charNotes').value, notesH: document.getElementById('charNotes').style.height || '', avatar: avatarBase64,
             languages: document.getElementById('charLanguages').value, languagesH: document.getElementById('charLanguages').style.height || '',
             skillProfs: Array.from(document.querySelectorAll('.stat-skill.proficient')).map(el => el.dataset.skill),
@@ -1190,7 +1312,9 @@
         document.getElementById('inventoryList').innerHTML = '';
         if (data.items) data.items.forEach(item => addItem(item.name, item.desc, item.img || '', item.h || ''));
         document.getElementById('skillsList').innerHTML = '';
-        if (data.skills) data.skills.forEach(s => addSkill(s.name, s.desc, s.cost, s.link || '', s.h || '', s.color || '#27ae60'));
+        if (data.skills) data.skills.forEach(s => addSkill(s.name, s.desc, s.cost, s.link || '', s.h || '', s.color || '#27ae60', !!s.collapsed));
+        document.getElementById('effectsList').innerHTML = '';
+        if (data.effects) data.effects.forEach(e => addEffect(e.name, e.type, e.source, e.duration, e.note));
         document.getElementById('bonusList').innerHTML = '';
         if (data.bonuses) data.bonuses.forEach(b => addBonus(b.name, b.val));
         document.getElementById('traitsList').innerHTML = '';
@@ -1227,6 +1351,11 @@
         // Load config
         if(localStorage.getItem('gh_token')) document.getElementById('ghToken').value = localStorage.getItem('gh_token');
         if(localStorage.getItem('gh_gist')) document.getElementById('gistId').value = localStorage.getItem('gh_gist');
+    }
+
+    function toggleStatesModal() {
+        const m = document.getElementById('statesModal');
+        m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
     }
 
     function saveCloudConfig() {
@@ -1507,10 +1636,28 @@
         }
     }
 
+    // --- HOTKEYS ---
+    document.addEventListener('keydown', e => {
+        if (!e.altKey || e.ctrlKey || e.shiftKey || e.metaKey) return;
+        const keyToTab = { '1': 'main', '2': 'skills', '3': 'magic', '4': 'inventory', '5': 'notes' };
+        const tab = keyToTab[e.key];
+        if (!tab) return;
+        e.preventDefault();
+        openTab(tab);
+    });
+
     // Автосохранение при ручном растягивании textarea
     let _rszTarget = null;
     document.addEventListener('mousedown', e => { if (e.target.tagName === 'TEXTAREA') { _rszTarget = e.target; _rszTarget._rszH = e.target.offsetHeight; } });
     document.addEventListener('mouseup', () => { if (_rszTarget && _rszTarget.offsetHeight !== _rszTarget._rszH) saveCharacter(); _rszTarget = null; });
+
+    // Закрытие модалок кликом на фон
+    window.addEventListener('click', e => {
+        ['cloudModal', 'colorPickerModal', 'cssModal', 'statesModal'].forEach(id => {
+            const m = document.getElementById(id);
+            if (e.target === m) m.style.display = 'none';
+        });
+    });
 
     window.onload = () => { loadCharacter(); loadCustomCss(); loadBg(); };
 </script>
