@@ -49,7 +49,7 @@
         .stats-bar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 20px; }
         .stat-card { background: #3d3d3d; padding: 10px 5px; border-radius: 6px; text-align: center; border-bottom: 3px solid var(--gold); }
         .stat-row { display: flex; align-items: center; justify-content: center; gap: 4px; }
-        .stat-card input.stat-val { width: 60%; background: transparent; border: none; color: white; text-align: right; font-size: 1.2rem; font-weight: bold; margin: 0; padding: 0; }
+        .stat-card input.stat-val { width: 60%; background: transparent; border: none; color: white; text-align: center; font-size: 1.2rem; font-weight: bold; margin: 0; padding: 0; }
         .stat-card input.stat-temp { width: 35%; background: #222; border: 1px solid var(--blue); color: var(--blue); text-align: center; font-size: 0.9rem; font-weight: bold; border-radius: 4px; padding: 2px; }
         .stat-mod { display: block; font-size: 1.2rem; color: var(--gold); font-weight: bold; background: #222; border-radius: 4px; margin: 5px auto 0; width: 80%; }
 
@@ -652,21 +652,21 @@
         <h2 style="color:var(--gold); margin-bottom:2px;">📚 Шпаргалка по состояниям</h2>
         <p style="margin-top:0;">Кратко: что делает состояние с персонажем.</p>
         <div class="states-grid">
-            <div class="state-card"><h4>Очарован</h4><p>Не может атаковать или вредить источнику очарования; источник имеет преимущество в соцпроверках против цели.</p></div>
-            <div class="state-card"><h4>Испуган</h4><p>Помеха на проверки и атаки, пока источник в поле зрения; не может добровольно приближаться к источнику страха.</p></div>
-            <div class="state-card"><h4>Сбит с ног</h4><p>Ползает; встать стоит половину скорости. Атаки вблизи с преимуществом, дальние атаки по цели с помехой.</p></div>
-            <div class="state-card"><h4>Опутан</h4><p>Скорость 0, бонусы к скорости не работают; помеха на атаки и ЛОВ спасброски, атаки по цели с преимуществом.</p></div>
-            <div class="state-card"><h4>Невидим</h4><p>Невозможно видеть без спецчувств/магии; атаки невидимого с преимуществом, атаки по нему с помехой.</p></div>
-            <div class="state-card"><h4>Оглушен</h4><p>Недееспособен, не может двигаться и говорить; проваливает СИЛ и ЛОВ спасброски; атаки по нему с преимуществом.</p></div>
-            <div class="state-card"><h4>Парализован</h4><p>Недееспособен и не может двигаться/говорить; автопровал СИЛ и ЛОВ спасбросков; ближняя атака с 5 фт может стать критом.</p></div>
-            <div class="state-card"><h4>Окаменевший</h4><p>Превращен в камень: недееспособен, не осознает, сопротивляется урону, иммунен к яду/болезням.</p></div>
-            <div class="state-card"><h4>Ослеплен</h4><p>Не видит, автопровал проверок с опорой на зрение; атаки цели с помехой, атаки по ней с преимуществом.</p></div>
-            <div class="state-card"><h4>Оглохший</h4><p>Не слышит, автопровал проверок, завязанных на слух.</p></div>
-            <div class="state-card"><h4>Схвачен</h4><p>Скорость 0. Обычно заканчивается, если схвативший недееспособен или цель выходит из захвата.</p></div>
-            <div class="state-card"><h4>Недееспособен</h4><p>Не может выполнять действия и реакции.</p></div>
-            <div class="state-card"><h4>Без сознания</h4><p>Недееспособен, не может двигаться/говорить, не осознает; роняет предметы и падает ничком; автопровал СИЛ/ЛОВ спасбросков.</p></div>
-            <div class="state-card"><h4>Отравлен</h4><p>Помеха на броски атаки и проверки характеристик.</p></div>
-            <div class="state-card"><h4>Изнурение</h4><p>Нарастающие штрафы по уровням истощения, вплоть до смерти на 6 уровне.</p></div>
+            <div class="state-card"><h4>🥰Очарован</h4><p>Не может атаковать или вредить источнику очарования; источник имеет преимущество в соцпроверках против цели.</p></div>
+            <div class="state-card"><h4>😱Испуган</h4><p>Помеха на проверки и атаки, пока источник в поле зрения; не может добровольно приближаться к источнику страха.</p></div>
+            <div class="state-card"><h4>😖Сбит с ног</h4><p>Ползает; встать стоит половину скорости. Атаки вблизи с преимуществом, дальние атаки по цели с помехой.</p></div>
+            <div class="state-card"><h4>🪢Опутан</h4><p>Скорость 0, бонусы к скорости не работают; помеха на атаки и ЛОВ спасброски, атаки по цели с преимуществом.</p></div>
+            <div class="state-card"><h4>🥷Невидим</h4><p>Невозможно видеть без спецчувств/магии; атаки невидимого с преимуществом, атаки по нему с помехой.</p></div>
+            <div class="state-card"><h4>😵‍💫Оглушен</h4><p>Недееспособен, не может двигаться и говорить; проваливает СИЛ и ЛОВ спасброски; атаки по нему с преимуществом.</p></div>
+            <div class="state-card"><h4>🧑‍🦼Парализован</h4><p>Недееспособен и не может двигаться/говорить; автопровал СИЛ и ЛОВ спасбросков; ближняя атака с 5 фт может стать критом.</p></div>
+            <div class="state-card"><h4>🪨Окаменевший</h4><p>Превращен в камень: недееспособен, не осознает, сопротивляется урону, иммунен к яду/болезням.</p></div>
+            <div class="state-card"><h4>😵Ослеплен</h4><p>Не видит, автопровал проверок с опорой на зрение; атаки цели с помехой, атаки по ней с преимуществом.</p></div>
+            <div class="state-card"><h4>🦻Оглохший</h4><p>Не слышит, автопровал проверок, завязанных на слух.</p></div>
+            <div class="state-card"><h4>🫳Схвачен</h4><p>Скорость 0. Обычно заканчивается, если схвативший недееспособен или цель выходит из захвата.</p></div>
+            <div class="state-card"><h4>🫠 Недееспособен</h4><p>Не может выполнять действия и реакции.</p></div>
+            <div class="state-card"><h4>😴Без сознания</h4><p>Недееспособен, не может двигаться/говорить, не осознает; роняет предметы и падает ничком; автопровал СИЛ/ЛОВ спасбросков.</p></div>
+            <div class="state-card"><h4>🤢Отравлен</h4><p>Помеха на броски атаки и проверки характеристик.</p></div>
+            <div class="state-card"><h4>🥱Изнурение</h4><p>Нарастающие штрафы по уровням истощения, вплоть до смерти на 6 уровне.</p></div>
         </div>
         <div class="modal-btns" style="margin-top:12px;">
             <button class="btn" style="background:#333;color:#aaa;" onclick="toggleStatesModal()">Закрыть</button>
@@ -818,8 +818,10 @@
         let currentVal = parseInt(currInput.value) || 0;
 
         if (currentVal > 0) {
-            currInput.value = currentVal - 1;
-            flashBtn(btn);
+            currentVal--;
+            currInput.value = currentVal;
+            const maxVal = parseInt(slotCard.querySelector('.slot-max').value) || 1;
+            flashBtn(btn, currentVal, maxVal);
             slotCard.classList.add('flash');
             setTimeout(() => slotCard.classList.remove('flash'), 1000);
             saveCharacter(); 
@@ -828,10 +830,14 @@
         }
     }
 
-    function flashBtn(btn) {
+    function flashBtn(btn, current = null, max = null) {
         btn.style.background = "#27ae60";
-        btn.innerText = "✓";
-        setTimeout(() => { btn.style.background = ""; btn.innerText = "Cast"; }, 1000);
+        let text = "✓";
+        if (current !== null && max !== null) {
+            text = `✓ ${current}/${max}`;
+        }
+        btn.innerText = text;
+        setTimeout(() => { btn.style.background = ""; btn.innerText = "Cast"; }, 2000);
     }
 
     function calcMod(input) {
