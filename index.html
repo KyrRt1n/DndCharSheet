@@ -1090,7 +1090,7 @@
         div.innerHTML = `
             <div class="effect-top">
                 <input type="text" class="effect-name" placeholder="Название эффекта" value="${name.replace(/"/g, '&quot;')}">
-                <select class="effect-type" onchange="setEffectType(this)">
+                <select class="effect-type" onchange="setEffectType(this)" style="color: #e0e0e0; background-color: #2b2b2b;">
                     <option value="buff" ${safeType === 'buff' ? 'selected' : ''}>Бафф</option>
                     <option value="debuff" ${safeType === 'debuff' ? 'selected' : ''}>Дебафф</option>
                     <option value="neutral" ${safeType === 'neutral' ? 'selected' : ''}>Прочее</option>
