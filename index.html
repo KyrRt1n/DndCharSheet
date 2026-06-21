@@ -192,11 +192,11 @@
 
         label { display: block; font-size: 0.75rem; color: var(--gold); text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
         input[type="text"], input[type="number"] { width: 100%; padding: 8px; background: var(--dark-input); border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
-        .npc-card { background: #2d2d2d; border: 1px solid #444; border-left: 3px solid var(--gold); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 6px; position: relative; }
-        .npc-name { font-weight: bold; font-size: 1rem; color: var(--gold); background: #222; border: none; border-bottom: 1px solid #444; padding: 5px 6px; width: 100%; box-sizing: border-box; border-radius: 3px 3px 0 0; }
-        .npc-desc { background: #222; border: none; color: #ccc; font-family: inherit; font-size: 0.9rem; padding: 6px; border-radius: 4px; resize: vertical; min-height: 40px; width: 100%; box-sizing: border-box; }
-        .npc-del { position: absolute; top: 6px; right: 6px; background: var(--red); color: white; border: none; font-size: 0.75rem; cursor: pointer; opacity: 0; width: 22px; height: 22px; border-radius: 4px; }
-        .npc-card:hover .npc-del { opacity: 1; }
+        .npc-card, .quest-card { background: #2d2d2d; border: 1px solid #444; border-left: 3px solid var(--gold); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 6px; position: relative; }
+        .npc-name, .quest-name { font-weight: bold; font-size: 1rem; color: var(--gold); background: #222; border: none; border-bottom: 1px solid #444; padding: 5px 6px; width: 100%; box-sizing: border-box; border-radius: 3px 3px 0 0; }
+        .npc-desc, .quest-desc { background: #222; border: none; color: #ccc; font-family: inherit; font-size: 0.9rem; padding: 6px; border-radius: 4px; resize: vertical; min-height: 40px; width: 100%; box-sizing: border-box; }
+        .npc-del, .quest-del { position: absolute; top: 6px; right: 6px; background: var(--red); color: white; border: none; font-size: 0.75rem; cursor: pointer; opacity: 0; width: 22px; height: 22px; border-radius: 4px; }
+        .npc-card:hover .npc-del, .quest-card:hover .quest-del { opacity: 1; }
         .notes-area { width: 100%; min-height: 200px; background: #222; border: 1px solid #444; color: #ddd; padding: 15px; border-radius: 8px; font-family: inherit; resize: vertical; box-sizing: border-box; }
         .notes-toolbar { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
         .notes-tool-btn { background: #333; border: 1px solid #555; color: #aaa; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: 0.2s; }
@@ -344,8 +344,8 @@
             .inv-slot input.item-name, .inv-slot textarea.item-desc { grid-column: 2; }
             .item-controls { position: absolute; bottom: 6px; right: 6px; display: flex; gap: 8px; }
 
-            /* NPC cards */
-            .npc-del { opacity: 1; }
+            /* NPC and Quest cards */
+            .npc-del, .quest-del { opacity: 1; }
 
             /* Bottom controls — скрываем, выносим в компактную панель */
             .controls {
@@ -544,10 +544,15 @@
             <span style="font-size:0.72rem;color:#555;margin-left:4px;">Поддерживается Markdown</span>
         </div>
         <textarea id="charNotes" class="notes-area" placeholder="Важные записи... (поддерживается **Markdown**)" style="min-height:400px;"></textarea>
-        <div id="notesPreview" class="notes-preview" style="min-height:400px;"></div>
+        
+        <h3 style="margin-top:20px;">📜 Квесты</h3>
+        <div id="questList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px;"></div>
+        <div class="add-zone" onclick="addQuest()">+ Добавить квест</div>
+
         <h3 style="margin-top:20px;">🧑‍🤝‍🧑 Известные персонажи</h3>
         <div id="npcList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px;"></div>
         <div class="add-zone" onclick="addNpc()">+ Добавить персонажа</div>
+        <div id="notesPreview" class="notes-preview" style="min-height:400px;"></div>
     </div>
 
     <div class="controls">
@@ -1238,6 +1243,7 @@
             notes: document.getElementById('charNotes').value, notesH: document.getElementById('charNotes').style.height || '', avatar: avatarBase64,
             languages: document.getElementById('charLanguages').value, languagesH: document.getElementById('charLanguages').style.height || '',
             skillProfs: Array.from(document.querySelectorAll('.stat-skill.proficient')).map(el => el.dataset.skill),
+            quests: Array.from(document.querySelectorAll('.quest-card')).map(c => { const ta = c.querySelector('.quest-desc'); return { name: c.querySelector('.quest-name').value, desc: ta.value, h: ta.style.height || '' }; }),
             npcs: Array.from(document.querySelectorAll('.npc-card')).map(c => { const ta = c.querySelector('.npc-desc'); return { name: c.querySelector('.npc-name').value, desc: ta.value, h: ta.style.height || '' }; }),
             spellDC: document.getElementById('spellDC').value,
             dcStat: document.getElementById('dcStat').value,
@@ -1325,6 +1331,10 @@
         if (data.bonuses) data.bonuses.forEach(b => addBonus(b.name, b.val));
         document.getElementById('traitsList').innerHTML = '';
         if (data.traits) data.traits.forEach(t => addTrait(t.name, t.desc, t.h || ''));
+        
+        document.getElementById('questList').innerHTML = '';
+        if (data.quests) data.quests.forEach(q => addQuest(q.name, q.desc, q.h || ''));
+
         document.getElementById('npcList').innerHTML = '';
         if (data.npcs) data.npcs.forEach(n => addNpc(n.name, n.desc, n.h || ''));
         if (data.theme) {
@@ -1336,6 +1346,18 @@
             loadCustomCss();
             loadBg();
         }
+    }
+
+    function addQuest(name = '', desc = '', h = '') {
+        const div = document.createElement('div');
+        div.className = 'quest-card';
+        div.innerHTML = `
+            <button class="quest-del" onclick="this.closest('.quest-card').remove(); saveCharacter()">✖</button>
+            <input type="text" class="quest-name" placeholder="Название квеста..." value="${name.replace(/"/g,'&quot;')}">
+            <textarea class="quest-desc" placeholder="Описание и цели квеста...">${desc}</textarea>`;
+        document.getElementById('questList').appendChild(div);
+        if (h) div.querySelector('.quest-desc').style.height = h;
+        if (!name) div.querySelector('.quest-name').focus();
     }
 
     function addNpc(name = '', desc = '', h = '') {
@@ -1577,7 +1599,7 @@
             .stat-card { background: rgba(61,61,61,${cardAlpha}) !important; }
             .stat-mod { background: rgba(34,34,34,${cardAlpha}) !important; }
             .vitals-grid, .spells-wrapper, .inventory-wrapper, .languages-box { background: rgba(34,34,34,${cardAlpha}) !important; }
-            .inv-slot, .trait-card, .npc-card, .spell-slot-card, .skill-item, .bonus-item { background: rgba(45,45,45,${cardAlpha}) !important; }
+            .inv-slot, .trait-card, .npc-card, .quest-card, .spell-slot-card, .skill-item, .bonus-item { background: rgba(45,45,45,${cardAlpha}) !important; }
             .level-badge { background: rgba(34,34,34,${cardAlpha}) !important; }
             input[type="text"], input[type="number"], textarea, select, .notes-area, .skill-name { background: rgba(17,17,17,${inputAlpha}) !important; }
         `;
