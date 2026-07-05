@@ -592,6 +592,21 @@
     </div>
 </div>
 
+<div id="cloudLoadModal" class="modal">
+    <div class="modal-content" style="max-width: 460px; text-align: left;">
+        <h2 style="color:var(--blue); margin-bottom:10px;">⬇️ Загрузка из облака</h2>
+        <p style="margin-top:0; color:#bbb;">Будет загружен следующий сейв:</p>
+        <div style="background:#222; border:1px solid #444; border-radius:6px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+            <div><span style="color:#888;">Дата и время:</span> <strong id="cloudLoadDate" style="color:var(--gold);">—</strong></div>
+            <div><span style="color:#888;">Персонаж:</span> <strong id="cloudLoadName" style="color:var(--gold);">—</strong></div>
+        </div>
+        <div class="modal-btns" style="margin-top:15px;">
+            <button class="btn btn-io" onclick="confirmCloudLoad()">⬇️ Загрузить</button>
+            <button class="btn" style="background:#333;color:#aaa;" onclick="closeCloudLoadModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+
 <div id="colorPickerModal" class="modal">
     <div class="modal-content" style="max-width: 320px;">
         <h2 style="color:var(--blue);">🎨 Цвет способности</h2>
@@ -1393,6 +1408,84 @@
         if(g) localStorage.setItem('gh_gist', g);
     }
 
+    function getLevelFromXp(totalXp) {
+        const xp = Number(totalXp) || 0;
+        for (let step of xpTable) {
+            if (xp >= step.xp) return step.lvl;
+        }
+        return 1;
+    }
+
+    function formatCloudLoadDate(value) {
+        if (!value) return '—';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return value;
+        return date.toLocaleString('ru-RU', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function openCloudLoadModal(gistData, charData) {
+        const modal = document.getElementById('cloudLoadModal');
+        const saveDate = formatCloudLoadDate(gistData.updated_at);
+        const name = (charData && charData.name) ? charData.name : 'Без имени';
+        const level = getLevelFromXp(charData && charData.totalXp);
+
+        document.getElementById('cloudLoadDate').textContent = saveDate;
+        document.getElementById('cloudLoadName').textContent = `${name} (${level} ур.)`;
+        modal.style.display = 'flex';
+        modal.dataset.pendingCloudLoad = JSON.stringify({ charData: charData });
+    }
+
+    function closeCloudLoadModal() {
+        const modal = document.getElementById('cloudLoadModal');
+        modal.style.display = 'none';
+        modal.dataset.pendingCloudLoad = '';
+    }
+
+    function confirmCloudLoad() {
+        const modal = document.getElementById('cloudLoadModal');
+        if (!modal.dataset.pendingCloudLoad) return;
+        const pending = JSON.parse(modal.dataset.pendingCloudLoad);
+        closeCloudLoadModal();
+        loadCharacter(pending.charData);
+        saveCharacter();
+        alert("Персонаж загружен из облака! ☁️");
+    }
+
+    async function prepareCloudLoad() {
+        const token = localStorage.getItem('gh_token');
+        const gistId = localStorage.getItem('gh_gist');
+        if(!token || !gistId) { alert("Укажите данные!"); return; }
+
+        try {
+            const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+                headers: { 'Authorization': `token ${token}` }
+            });
+
+            if(!res.ok) {
+                alert("Ошибка скачивания!");
+                return;
+            }
+
+            const gistJson = await res.json();
+            if(!(gistJson.files && gistJson.files['hero.json'])) {
+                alert("В этом Gist нет файла hero.json!");
+                return;
+            }
+
+            const charData = JSON.parse(gistJson.files['hero.json'].content);
+            openCloudLoadModal(gistJson, charData);
+        } catch(e) {
+            alert("Ошибка сети или парсинга!");
+            console.error(e);
+        }
+    }
+
     async function uploadToCloud() {
         const token = localStorage.getItem('gh_token');
         const gistId = localStorage.getItem('gh_gist');
@@ -1430,32 +1523,7 @@
     }
 
     async function loadFromCloud() {
-        const token = localStorage.getItem('gh_token');
-        const gistId = localStorage.getItem('gh_gist');
-        if(!token || !gistId) { alert("Укажите данные!"); return; }
-
-        try {
-            const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-                headers: { 'Authorization': `token ${token}` }
-            });
-            
-            if(res.ok) {
-                const json = await res.json();
-                if(json.files && json.files['hero.json']) {
-                    const charData = JSON.parse(json.files['hero.json'].content);
-                    loadCharacter(charData);
-                    saveCharacter(); 
-                    alert("Персонаж загружен из облака! ☁️");
-                } else {
-                    alert("В этом Gist нет файла hero.json!");
-                }
-            } else {
-                alert("Ошибка скачивания!");
-            }
-        } catch(e) {
-            alert("Ошибка сети или парсинга!");
-            console.error(e);
-        }
+        prepareCloudLoad();
     }
 
     function exportToFile() {
@@ -1681,7 +1749,7 @@
 
     // Закрытие модалок кликом на фон
     window.addEventListener('click', e => {
-        ['cloudModal', 'colorPickerModal', 'cssModal', 'statesModal'].forEach(id => {
+        ['cloudModal', 'cloudLoadModal', 'colorPickerModal', 'cssModal', 'statesModal'].forEach(id => {
             const m = document.getElementById(id);
             if (e.target === m) m.style.display = 'none';
         });
